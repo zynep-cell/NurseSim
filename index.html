@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NurseSim - Gelişmiş Klinik Simülasyon</title>
+    <title>NurseSim - Tam Kapsamlı Klinik Karar Destek Sistemi</title>
     <style>
         /* === TEMEL DEĞİŞKENLER VE SIFIRLAMA === */
         :root {
             --primary: #00796b; --primary-light: #48a999; --primary-dark: #004c40;
             --bg: #f0f4f4; --surface: #ffffff; --text-dark: #333333; --text-light: #757575;
             --border: #e0e0e0; --accent: #ff5252; --warning: #ffb300; --success: #4caf50;
+            --global-tab: #3949ab;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -70,91 +71,94 @@
         .btn-symptom { background: var(--surface); border: 1px solid var(--primary-light); color: var(--primary-dark); padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.8rem; cursor: pointer; transition: all 0.2s ease; }
         .btn-symptom:hover { background: #e0f2f1; } .btn-symptom.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         .custom-adder { background: white; padding: 1rem; border-radius: 8px; border: 1px dashed var(--primary-light); display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem; }
-        .custom-adder input, .form-control { padding: 0.5rem; border: 1px solid var(--border); border-radius: 4px; outline: none; }
+        .custom-adder input { padding: 0.5rem; border: 1px solid var(--border); border-radius: 4px; outline: none; }
         .btn-add { background: var(--primary); color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-weight: bold; }
         .btn-add:hover { background: var(--primary-dark); }
+        .btn-add-global { background: var(--global-tab); } .btn-add-global:hover { background: #283593; }
 
         /* === SAĞ SÜTUN === */
-        .tabs { display: flex; gap: 0.5rem; border-bottom: 2px solid var(--border); margin-bottom: 1rem; overflow-x: auto; flex-shrink: 0; }
-        .tab { padding: 0.7rem 1rem; background: transparent; border: none; font-size: 0.95rem; color: var(--text-light); cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all 0.3s ease; font-weight: 600; white-space: nowrap; }
-        .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
-        .tab-content { display: none; background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); flex: 1; flex-direction: column; overflow-y: auto; }
+        .tabs { display: flex; gap: 0.25rem; border-bottom: 2px solid var(--border); margin-bottom: 1rem; overflow-x: auto; flex-shrink: 0; padding-bottom: 2px; }
+        .tab { padding: 0.7rem 1rem; background: transparent; border: 1px solid transparent; font-size: 0.9rem; color: var(--text-light); cursor: pointer; border-radius: 8px 8px 0 0; transition: all 0.3s ease; font-weight: 600; white-space: nowrap; margin-bottom: -2px; }
+        .tab.vaka-tab.active { background: white; border-color: var(--border); border-bottom-color: white; color: var(--primary); border-top: 3px solid var(--primary); }
+        .tab.genel-tab.active { background: white; border-color: var(--border); border-bottom-color: white; color: var(--global-tab); border-top: 3px solid var(--global-tab); }
+        
+        .tab-content { display: none; background: white; padding: 1.5rem; border-radius: 0 8px 8px 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); flex: 1; flex-direction: column; overflow-y: auto; border: 1px solid var(--border); border-top: none; }
         .tab-content.active { display: flex; }
 
         .form-group { display: flex; flex-direction: column; gap: 0.5rem; flex: 1; }
-        label { font-weight: bold; color: var(--primary-dark); font-size: 0.9rem; margin-top: 0.5rem; }
+        label { font-weight: bold; color: var(--text-dark); font-size: 0.9rem; margin-top: 0.5rem; }
         textarea { flex: 1; resize: none; padding: 1rem; border: 1px solid var(--border); border-radius: 6px; outline: none; font-size: 0.95rem; }
         .input-row { display: flex; gap: 0.5rem; margin-bottom: 1rem; align-items: center; }
         .input-row input, .input-row select { flex: 1; padding: 0.7rem; border: 1px solid var(--border); border-radius: 6px; outline: none; }
         
         .item-list { list-style: none; overflow-y: auto; flex: 1; }
-        .item-list li { background: var(--bg); padding: 0.75rem 1rem; border-radius: 6px; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--primary-light); }
+        .item-list li { background: var(--bg); padding: 0.75rem 1rem; border-radius: 6px; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--border); }
         .item-list li.intervention { border-left-color: #ff9800; justify-content: flex-start; gap: 10px; }
         .item-list li.intervention.done { background: #f1f8e9; border-left-color: var(--success); opacity: 0.8; }
+        .item-list li.nanda-item { border-left-color: var(--primary-light); }
+        .item-list li.nanda-global-item { border-left-color: var(--global-tab); }
         .item-list li.intervention span { flex: 1; }
         .delete-btn { background: none; border: none; color: var(--accent); cursor: pointer; font-weight: bold; font-size: 1.2rem; }
         .badge-done { background: var(--success); color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; margin-left: auto; }
 
-        /* === 2D AKIŞ ŞEMASI (FLOWCHART) ÇİZİM TUALİ === */
-        .flow-toolbar { background: var(--bg); padding: 10px; border-radius: 8px; margin-bottom: 10px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-        .flow-toolbar select { padding: 6px; border-radius: 4px; border: 1px solid var(--border); outline: none; }
-        .link-mode-btn { background: #3949ab; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        .link-mode-btn.active { background: var(--accent); box-shadow: 0 0 8px rgba(255,82,82,0.6); }
+        /* === 2D AKIŞ ŞEMASI (GENEL KÜTÜPHANE) === */
+        .flow-toolbar { background: var(--bg); padding: 10px; border-radius: 8px; margin-bottom: 10px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; border-left: 4px solid var(--global-tab); }
+        .flow-toolbar select, .flow-toolbar input { padding: 6px; border-radius: 4px; border: 1px solid var(--border); outline: none; }
+        .link-mode-btn { background: #333; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .link-mode-btn.active { background: var(--accent); box-shadow: 0 0 8px rgba(255,82,82,0.8); animation: pulse-link 1.5s infinite; }
+        @keyframes pulse-link { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
         .flow-canvas { flex: 1; background: #fafcfc; border: 1px dashed var(--border); border-radius: 8px; position: relative; overflow: hidden; min-height: 400px; cursor: grab; }
+        .flow-canvas.linking { cursor: crosshair; }
         #flow-svg-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
         
         .flow-node {
             position: absolute; min-width: 120px; padding: 10px; text-align: center; font-weight: 600; font-size: 0.85rem; color: white;
-            display: flex; justify-content: center; align-items: center; cursor: grab; z-index: 2; box-shadow: 0 3px 6px rgba(0,0,0,0.15); transition: box-shadow 0.2s; user-select: none;
+            display: flex; justify-content: center; align-items: center; cursor: grab; z-index: 2; box-shadow: 0 3px 6px rgba(0,0,0,0.15); transition: outline 0.2s; user-select: none;
         }
         .flow-node:active { cursor: grabbing; box-shadow: 0 5px 12px rgba(0,0,0,0.3); }
-        .flow-node.link-target-hover { outline: 3px solid #ffeb3b; outline-offset: 3px; }
+        .flow-node.link-source { outline: 4px solid var(--accent); outline-offset: 3px; z-index: 10; }
         
-        /* Şekiller */
         .shape-rect { border-radius: 6px; }
         .shape-ellipse { border-radius: 40px; padding: 10px 20px; }
         .shape-rhombus { clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); padding: 20px; min-height: 80px; min-width: 100px; }
         .shape-parallelogram { clip-path: polygon(15% 0, 100% 0, 85% 100%, 0% 100%); padding: 10px 20px; }
         
-        .node-inner { outline: none; width: 100%; text-align: center; } /* Yazı düzenleme için */
-        .node-delete {
-            position: absolute; top: -10px; right: -10px; background: var(--accent); color: white; border: none; border-radius: 50%;
-            width: 22px; height: 22px; font-size: 12px; cursor: pointer; display: none; justify-content: center; align-items: center; z-index: 3;
-        }
+        .node-inner { outline: none; width: 100%; text-align: center; }
+        .node-delete { position: absolute; top: -10px; right: -10px; background: var(--accent); color: white; border: none; border-radius: 50%; width: 22px; height: 22px; font-size: 12px; cursor: pointer; display: none; justify-content: center; align-items: center; z-index: 3; }
         .flow-node:hover .node-delete { display: flex; }
+        
+        /* Akış Şeması Kayıt Barı */
+        .flow-save-bar { display: flex; gap: 10px; padding: 10px; background: #e8eaf6; border-radius: 8px; margin-top: 10px; align-items: center; }
 
         /* === İLAÇ DEFTERİ === */
         .drug-toolbar { display: flex; gap: 10px; margin-bottom: 1rem; }
-        .drug-search { flex: 1; padding: 0.6rem; border: 1px solid var(--primary-light); border-radius: 20px; outline: none; padding-left: 1rem; }
-        
+        .drug-search { flex: 1; padding: 0.6rem; border: 1px solid var(--global-tab); border-radius: 20px; outline: none; padding-left: 1rem; }
         .tag-container { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; padding: 5px; border: 1px solid var(--border); border-radius: 4px; min-height: 40px; background: #fafcfc; }
-        .tag-chip { background: var(--primary-light); color: white; padding: 3px 8px; border-radius: 12px; font-size: 0.75rem; display: flex; align-items: center; gap: 5px; }
-        .tag-chip span { cursor: pointer; font-weight: bold; }
-        
+        .tag-chip { background: #e8eaf6; color: var(--global-tab); padding: 3px 8px; border-radius: 12px; font-size: 0.75rem; display: flex; align-items: center; gap: 5px; font-weight: bold; border: 1px solid #c5cae9; }
+        .tag-chip span { cursor: pointer; color: var(--accent); }
         .drug-list { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; flex: 1; }
         .drug-card { background: white; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
-        .drug-header { padding: 10px 15px; background: var(--bg); display: flex; justify-content: space-between; cursor: pointer; font-weight: bold; color: var(--primary-dark); }
+        .drug-header { padding: 10px 15px; background: var(--bg); display: flex; justify-content: space-between; cursor: pointer; font-weight: bold; color: var(--global-tab); }
         .drug-header:hover { background: #e0f2f1; }
         .drug-body { padding: 15px; display: none; border-top: 1px solid var(--border); font-size: 0.9rem; }
         .drug-body.open { display: block; }
         .interaction-alert { background: #ffebee; border-left: 4px solid var(--accent); padding: 8px; margin-top: 10px; border-radius: 4px; }
         .interaction-alert.medium { background: #fff8e1; border-left-color: var(--warning); }
-        
         #drug-form-panel { background: #f9f9f9; padding: 15px; border: 1px solid var(--border); border-radius: 8px; display: none; margin-bottom: 10px; }
 
-        /* Kaydetme Butonu */
+        /* Kaydetme Butonu (Sadece Vaka İçin) */
         .save-section { margin-top: auto; padding-top: 1rem; }
         .btn-save { width: 100%; background: var(--primary-dark); color: white; border: none; padding: 1rem; border-radius: 8px; font-size: 1rem; cursor: pointer; font-weight: bold; transition: background 0.3s; }
         .btn-save:hover { background: #00332a; }
 
-        /* KÜTÜPHANE PANELİ */
+        /* KÜTÜPHANE PANELİ (Vakalar) */
         .library-panel { position: absolute; top: 0; right: -400px; width: 350px; height: 100%; background: white; box-shadow: -5px 0 15px rgba(0,0,0,0.1); transition: right 0.3s ease; z-index: 20; display: flex; flex-direction: column; }
         .library-panel.open { right: 0; }
         .library-header { background: var(--primary); color: white; padding: 1rem; display: flex; justify-content: space-between; align-items: center; }
         .close-btn { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
         .saved-cases { padding: 1rem; overflow-y: auto; flex: 1; list-style: none; }
-        .case-card { background: var(--bg); border: 1px solid var(--border); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; cursor: pointer; }
+        .case-card { background: var(--bg); border: 1px solid var(--border); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; cursor: pointer; border-left: 4px solid var(--primary); }
         .case-card:hover { border-color: var(--primary); background: #e0f2f1; }
         .case-delete { float: right; color: var(--accent); background: none; border: none; cursor: pointer; }
     </style>
@@ -164,13 +168,13 @@
     <header>
         <h1>NurseSim</h1>
         <div class="header-btns">
-            <button class="btn-header btn-new-case" onclick="startNewCase()">🔄 Yeni Vaka</button>
-            <button class="btn-header" onclick="toggleLibrary()">📚 Vaka Kütüphanem</button>
+            <button class="btn-header btn-new-case" onclick="startNewCase()">🔄 Yeni Vaka Başlat</button>
+            <button class="btn-header" onclick="toggleLibrary()">📚 Vaka Kütüphanesi</button>
         </div>
     </header>
 
     <div class="main-container">
-        <!-- SOL SÜTUN -->
+        <!-- SOL SÜTUN (SİMÜLASYON) -->
         <div class="left-col">
             <div class="simulation-wrapper">
                 <div class="simulation-area">
@@ -196,76 +200,96 @@
                 </div>
             </div>
 
+            <!-- EKSİKSİZ BELİRTİ LİSTESİ BURAYA GELECEK -->
             <div class="symptoms-wrapper" id="symptoms-container"></div>
             
             <div class="custom-adder">
                 <h4 style="color: var(--primary-dark);">➕ Yeni Belirti Ekle</h4>
                 <input type="text" id="custom-symptom-name" placeholder="Belirti Adı (Örn: Fotofobi)">
                 <input type="text" id="custom-symptom-quote" placeholder="Hasta Söylemi (Örn: Işık gözümü alıyor!)">
-                <button class="btn-add" onclick="addCustomSymptom()">Klinik Tabloya Ekle</button>
+                <button class="btn-add" onclick="addCustomSymptom()">Vakaya Ekle</button>
             </div>
         </div>
 
-        <!-- SAĞ SÜTUN -->
+        <!-- SAĞ SÜTUN (SEKMELER) -->
         <div class="right-col">
+            <!-- Vaka Sekmeleri ve Genel Sekmeler -->
             <div class="tabs">
-                <button class="tab active" data-target="tab-status" onclick="switchTab(this)">Durum ve Tanı</button>
-                <button class="tab" data-target="tab-nanda" onclick="switchTab(this)">NANDA Defteri</button>
-                <button class="tab" data-target="tab-care" onclick="switchTab(this)">Girişim & Bakım</button>
-                <button class="tab" data-target="tab-flow" onclick="switchTab(this)">Akış Şeması</button>
-                <button class="tab" data-target="tab-drugs" onclick="switchTab(this)">💊 İlaç Defteri</button>
+                <span style="padding: 0.7rem 0.5rem; font-size:0.8rem; color:var(--primary); font-weight:bold;">VAKAYA ÖZEL:</span>
+                <button class="tab vaka-tab active" data-target="tab-status" onclick="switchTab(this, 'vaka')">Gözlem & Tanı</button>
+                <button class="tab vaka-tab" data-target="tab-care" onclick="switchTab(this, 'vaka')">Bakım Planı</button>
+                
+                <span style="padding: 0.7rem 0.5rem; font-size:0.8rem; color:var(--global-tab); font-weight:bold; margin-left:10px;">GENEL SÖZLÜKLER:</span>
+                <button class="tab genel-tab" data-target="tab-nanda-dict" onclick="switchTab(this, 'genel')">📚 NANDA Sözlüğü</button>
+                <button class="tab genel-tab" data-target="tab-flow" onclick="switchTab(this, 'genel')">🔀 Akış Şemaları</button>
+                <button class="tab genel-tab" data-target="tab-drugs" onclick="switchTab(this, 'genel')">💊 İlaç Defteri</button>
             </div>
 
-            <!-- Sekme 1: Durum -->
+            <!-- SEKME 1: Vaka Gözlem & Tanı -->
             <div class="tab-content active" id="tab-status">
                 <div class="form-group">
-                    <label>Klinik Tablo Analizi & Olası Hastalık Tanısı</label>
-                    <textarea id="disease-diagnosis" placeholder="Bu belirtiler kombinasyonu hangi hastalığı veya komplikasyonu işaret ediyor?"></textarea>
+                    <label>Hastaya Dair Gözlemler / Hemşirelik Notları</label>
+                    <textarea id="nursing-notes" placeholder="Hastanın genel görünümü, vital bulguları, şikayetleri..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Klinik Analiz & Tıbbi Tanı</label>
+                    <textarea id="disease-diagnosis" placeholder="Bu tablo hangi hastalığı/komplikasyonu işaret ediyor?"></textarea>
                 </div>
             </div>
 
-            <!-- Sekme 2: NANDA -->
-            <div class="tab-content" id="tab-nanda">
-                <label>Hemşirelik Tanıları (NANDA)</label>
-                <div class="input-row">
-                    <input type="text" id="nanda-input" list="nanda-suggestions" placeholder="Tanı aramaya başla (Örn: Sıvı...)">
-                    <datalist id="nanda-suggestions"></datalist>
-                    <button class="btn-add" onclick="addToList('nanda')">Ekle</button>
-                </div>
-                <ul class="item-list" id="nanda-list"></ul>
-            </div>
-
-            <!-- Sekme 3: Bakım (YENİ TİK MANTIĞI) -->
+            <!-- SEKME 2: Vaka Bakım Planı (NANDA + Girişim) -->
             <div class="tab-content" id="tab-care">
+                <label>Vakaya Özgü NANDA Tanıları</label>
+                <div class="input-row">
+                    <input type="text" id="case-nanda-input" list="nanda-suggestions" placeholder="Genel sözlükten ara veya yaz...">
+                    <datalist id="nanda-suggestions"></datalist>
+                    <button class="btn-add" onclick="addCaseNanda()">Listeye Ekle</button>
+                </div>
+                <ul class="item-list" id="case-nanda-list" style="margin-bottom:15px; max-height: 150px;"></ul>
+
                 <label>Hemşirelik Girişimleri (Checklist)</label>
                 <div class="input-row">
                     <input type="text" id="intervention-input" placeholder="Örn: O2 başlandı, KŞ takibi yapılacak">
-                    <button class="btn-add" onclick="addToList('intervention')">Ekle</button>
+                    <button class="btn-add" onclick="addIntervention()">Ekle</button>
                 </div>
                 <ul class="item-list" id="intervention-list"></ul>
             </div>
 
-            <!-- Sekme 4: 2D Akış Şeması -->
-            <div class="tab-content" id="tab-flow" style="padding: 10px;">
-                <label style="padding-left:10px;">Klinik Yönetim Akış Şeması (Sürükle-Bırak)</label>
+            <!-- SEKME 3: Genel NANDA Sözlüğü -->
+            <div class="tab-content" id="tab-nanda-dict">
+                <div style="background:#e8eaf6; padding:10px; border-radius:6px; margin-bottom:15px; font-size:0.9rem; color:var(--global-tab);">
+                    ℹ️ Burası senin genel kütüphanendir. Buraya eklediğin tanılar, "Bakım Planı" sekmesinde otomatik arama listesine çıkar. Vakadan bağımsızdır.
+                </div>
+                <label>Sözlüğe Yeni Tanı Ekle</label>
+                <div class="input-row">
+                    <input type="text" id="global-nanda-input" placeholder="Örn: Sıvı volüm eksikliği">
+                    <button class="btn-add btn-add-global" onclick="addGlobalNanda()">Sözlüğe Kaydet</button>
+                </div>
+                <label>Kayıtlı Sözlük Verileri</label>
+                <ul class="item-list" id="global-nanda-list"></ul>
+            </div>
+
+            <!-- SEKME 4: Genel Akış Şemaları -->
+            <div class="tab-content" id="tab-flow" style="padding: 10px; display: flex; flex-direction: column;">
                 <div class="flow-toolbar">
                     <select id="flow-shape">
                         <option value="shape-rect">Dikdörtgen (İşlem)</option>
-                        <option value="shape-ellipse">Elips (Durum/Başlangıç)</option>
-                        <option value="shape-rhombus">Eşkenar Dörtgen (Karar/Soru)</option>
-                        <option value="shape-parallelogram">Paralelkenar (Veri/Giriş)</option>
+                        <option value="shape-ellipse">Elips (Başlangıç/Durum)</option>
+                        <option value="shape-rhombus">Eşkenar Dörtgen (Soru/Karar)</option>
+                        <option value="shape-parallelogram">Paralelkenar (Veri)</option>
                     </select>
                     <select id="flow-color">
+                        <option value="#3949ab">Lacivert</option>
                         <option value="#00796b">Teal (Yeşilimsi)</option>
-                        <option value="#1976d2">Mavi</option>
                         <option value="#d32f2f">Kırmızı</option>
                         <option value="#f57c00">Turuncu</option>
-                        <option value="#7e57c2">Mor</option>
                     </select>
-                    <button class="btn-add" onclick="addFlowNodeUI()">+ Kutu Ekle</button>
+                    <button class="btn-add btn-add-global" onclick="addFlowNodeUI()">+ Kutu Ekle</button>
                     <span style="border-left: 1px solid var(--border); height: 20px; margin: 0 5px;"></span>
-                    <button id="link-mode-btn" class="link-mode-btn" onclick="toggleLinkMode()">🔗 Ok Bağlantı Modu: KAPALI</button>
+                    <button id="link-mode-btn" class="link-mode-btn" onclick="toggleLinkMode()">🔗 Bağlantı Modu: KAPALI</button>
+                    <span id="link-hint" style="color:var(--accent); font-size:0.8rem; display:none; margin-left:5px;">(Önce başa, sonra hedefe tıkla)</span>
                 </div>
+                
                 <div class="flow-canvas" id="flow-canvas">
                     <svg id="flow-svg-layer">
                         <defs>
@@ -275,20 +299,27 @@
                         </defs>
                         <g id="lines-container"></g>
                     </svg>
-                    <!-- Flow Node'lar buraya js ile absolute eklenecek -->
+                    <!-- Kutular JS ile eklenecek -->
+                </div>
+
+                <div class="flow-save-bar">
+                    <input type="text" id="flow-name" placeholder="Şema Adı (Örn: Hipoglisemi Algoritması)" style="flex:1; padding:0.6rem; border-radius:4px; border:1px solid var(--border);">
+                    <button class="btn-add btn-add-global" onclick="saveGlobalFlowchart()">💾 Şemayı Kaydet</button>
+                    <select id="saved-flows-select" style="padding:0.6rem; border-radius:4px; border:1px solid var(--border);" onchange="loadSelectedFlowchart()">
+                        <option value="">-- Kayıtlı Şemalarım --</option>
+                    </select>
+                    <button class="btn-header" style="background:#e53935; color:white;" onclick="clearFlowchart()">Temizle</button>
                 </div>
             </div>
 
-            <!-- Sekme 5: İlaç Defteri -->
+            <!-- SEKME 5: Genel İlaç Defteri -->
             <div class="tab-content" id="tab-drugs">
                 <div class="drug-toolbar">
                     <input type="text" id="drug-search" class="drug-search" placeholder="İlaç adı, etken madde veya belirti ara..." onkeyup="filterDrugs()">
-                    <button class="btn-add" onclick="document.getElementById('drug-form-panel').style.display = 'block'">+ Yeni İlaç</button>
+                    <button class="btn-add btn-add-global" onclick="document.getElementById('drug-form-panel').style.display = 'block'">+ Yeni İlaç</button>
                 </div>
-
-                <!-- Yeni İlaç Ekleme Paneli -->
                 <div id="drug-form-panel">
-                    <h4 style="color:var(--primary-dark); margin-bottom:10px;">Yeni İlaç / Prospektüs Tanımla</h4>
+                    <h4 style="color:var(--global-tab); margin-bottom:10px;">Yeni İlaç / Prospektüs Tanımla</h4>
                     <div class="input-row">
                         <input type="text" id="df-name" placeholder="Ticari Adı (Örn: Parol)">
                         <input type="text" id="df-active" placeholder="Etken Madde (Örn: Parasetamol)">
@@ -296,13 +327,10 @@
                             <option value="Analjezik / Antienflamatuar">Analjezik / Antienflamatuar</option>
                             <option value="Antibiyotik">Antibiyotik</option>
                             <option value="Kardiyovasküler">Kardiyovasküler</option>
-                            <option value="Solunum Sistemi">Solunum Sistemi</option>
-                            <option value="Gastrointestinal">Gastrointestinal</option>
                             <option value="Diğer">Diğer</option>
                         </select>
                     </div>
-                    
-                    <label>Endikasyonlar (Kullanıldığı Durumlar)</label>
+                    <label>Endikasyonlar</label>
                     <div class="input-row" style="margin-bottom: 5px;">
                         <input type="text" id="df-ind-input" placeholder="Yazıp ekle (Örn: Hafif ağrı)">
                         <button class="btn-add" onclick="addDrugTag('indications')">Ekle</button>
@@ -311,39 +339,25 @@
 
                     <label>Yan Etkiler</label>
                     <div class="input-row" style="margin-bottom: 5px;">
-                        <input type="text" id="df-side-input" placeholder="Yazıp ekle (Örn: Mide bulantısı)">
+                        <input type="text" id="df-side-input" placeholder="Yazıp ekle (Örn: Bulantı)">
                         <button class="btn-add" onclick="addDrugTag('sideEffects')">Ekle</button>
                     </div>
                     <div id="df-side-tags" class="tag-container"></div>
 
-                    <label>Riskli Etkileşimler</label>
-                    <div class="input-row" style="margin-bottom: 5px;">
-                        <input type="text" id="df-inter-name" placeholder="Madde/İlaç (Örn: Alkol)">
-                        <select id="df-inter-risk">
-                            <option value="Yüksek">Yüksek Risk (Kırmızı)</option>
-                            <option value="Orta">Orta Risk (Sarı)</option>
-                        </select>
-                        <button class="btn-add" onclick="addDrugInteraction()">Uyarı Ekle</button>
-                    </div>
-                    <div id="df-inter-list" style="margin-bottom: 10px; font-size: 0.85rem;"></div>
-
-                    <div style="display:flex; justify-content:flex-end; gap:10px;">
+                    <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;">
                         <button class="btn-header" style="background:#9e9e9e;" onclick="document.getElementById('drug-form-panel').style.display='none'">İptal</button>
-                        <button class="btn-add" onclick="saveNewDrug()">Veritabanına Kaydet</button>
+                        <button class="btn-add btn-add-global" onclick="saveNewDrug()">Veritabanına Kaydet</button>
                     </div>
                 </div>
-
-                <div class="drug-list" id="drug-list-container">
-                    <!-- İlaçlar JS ile dolacak -->
-                </div>
+                <div class="drug-list" id="drug-list-container"></div>
             </div>
 
-            <!-- Kaydet Butonu Sadece Vaka sekmesinde ortak -->
+            <!-- Kaydet Butonu (Sadece Vaka Sekmeleri Açıkken Görünür) -->
             <div class="save-section" id="case-save-section">
                 <div class="input-row">
                     <input type="text" id="case-name" placeholder="Vaka Adı (Örn: Acil KOAH Atağı)">
                 </div>
-                <button class="btn-save" onclick="saveCase()">💾 Vakayı Kütüphaneme Kaydet</button>
+                <button class="btn-save" onclick="saveCase()">💾 VAKAYI KÜTÜPHANEYE KAYDET</button>
             </div>
         </div>
     </div>
@@ -351,79 +365,113 @@
     <!-- KÜTÜPHANE PANELİ -->
     <div class="library-panel" id="library-panel">
         <div class="library-header">
-            <h3>Kütüphanem</h3>
+            <h3>Vaka Kütüphanesi</h3>
             <button class="close-btn" onclick="toggleLibrary()">&times;</button>
         </div>
         <ul class="saved-cases" id="saved-cases-list"></ul>
     </div>
 
     <script>
-        // === KLİNİK & İLAÇ VERİTABANLARI ===
+        // === 1. SİMÜLASYON VE BELİRTİ VERİTABANI (EKSİKSİZ) ===
         const symptomsDB = {
             "Respiratuar": [
                 { id: "s1", name: "Dispne", part: "part-chest", animClass: "anim-fast-breath", quote: "Nefes alamıyorum!" },
                 { id: "s2", name: "Siyanoz", part: "part-head", animClass: "anim-cyanosis", quote: "Dudaklarım morarıyor..." },
-                { id: "s3", name: "Öksürük", part: "part-chest", animClass: "anim-shake", quote: "Öhö! Göğsüm yırtılıyor." }
+                { id: "s3", name: "Öksürük", part: "part-chest", animClass: "anim-shake", quote: "Öhö, öhö! Göğsüm yırtılıyor." }
             ],
             "Kardiyovasküler": [
                 { id: "s4", name: "Göğüs Ağrısı", part: "part-heart", animClass: "anim-pulse-red", quote: "Göğsümde ezici bir ağrı var!" },
-                { id: "s5", name: "Çarpıntı", part: "part-heart", animClass: "anim-fast-flash", quote: "Kalbim çarpıyor!" },
-                { id: "s6", name: "Solukluk", part: "part-head", animClass: "anim-pale", quote: "Çok halsiz hissediyorum." }
+                { id: "s5", name: "Çarpıntı", part: "part-heart", animClass: "anim-fast-flash", quote: "Kalbim yerinden çıkacak gibi çarpıyor!" },
+                { id: "s6", name: "Solukluk/Soğuk Terleme", part: "part-head", animClass: "anim-pale", quote: "Kendimi çok halsiz hissediyorum." },
+                { id: "s7", name: "Periferik Ödem", part: "part-legs-l", animClass: "anim-swell", quote: "Bacaklarım şiş ve gergin." }
             ],
             "Nörolojik": [
-                { id: "s8", name: "Konfüzyon", part: "part-head", animClass: "anim-spiral", quote: "Neredeyim ben?" },
-                { id: "s9", name: "Fasiyal Asimetri", part: "part-head", animClass: "anim-asymmetry", quote: "Yüzümün yarısını hissetmiyorum." }
+                { id: "s8", name: "Konfüzyon", part: "part-head", animClass: "anim-spiral", quote: "Neredeyim ben? Siz kimsiniz?" },
+                { id: "s9", name: "Fasiyal Asimetri", part: "part-head", animClass: "anim-asymmetry", quote: "Yüzümün bir tarafını hissedemiyorum." },
+                { id: "s10", name: "Letarji", part: "part-head", animClass: "anim-pale", quote: "Gözümü açamıyorum, çok uykum var..." },
+                { id: "s18", name: "Parestezi", part: "part-arms-l", animClass: "anim-shake", quote: "Kollarımda karıncalanma var." }
             ],
-            "Metabolik": [
-                { id: "s14", name: "Hipoglisemi", part: "body-wrapper", animClass: "anim-shake", quote: "İçim çekiliyor, titriyorum!" },
-                { id: "s13", name: "Yüksek Ateş", part: "body-wrapper", animClass: "anim-fever", quote: "Yanıyorum!" }
+            "Gastrointestinal / Metabolik": [
+                { id: "s11", name: "Bulantı/Kusma", part: "part-stomach", animClass: "anim-wave-green", quote: "Midem çok bulanıyor..." },
+                { id: "s12", name: "Akut Karın Ağrısı", part: "part-stomach", animClass: "anim-sharp-red", quote: "Karnıma bıçak saplanıyor sanki!" },
+                { id: "s13", name: "Yüksek Ateş", part: "body-wrapper", animClass: "anim-fever", quote: "Yanıyorum, çok sıcak!" },
+                { id: "s19", name: "Titreme", part: "body-wrapper", animClass: "anim-shake", quote: "Çok üşüyorum..." }
+            ],
+            "Ürolojik / Sistemik": [
+                { id: "s16", name: "Anüri / Oligüri", part: "part-stomach", animClass: "anim-swell", quote: "Sabahtan beri hiç idrara çıkamadım." },
+                { id: "s17", name: "Melena/Hematemez", part: "part-stomach", animClass: "anim-sharp-red", quote: "Dışkım simsiyah ve katran gibi." }
+            ],
+            "Glukoz Parametreleri": [
+                { id: "s14", name: "Hipoglisemi", part: "body-wrapper", animClass: "anim-shake", quote: "İçim çekiliyor, soğuk terliyorum, ellerim titriyor!" },
+                { id: "s15", name: "Hiperglisemi", part: "part-head", animClass: "anim-dry", quote: "Ağzım kupkuru, çok susadım!" }
             ]
         };
 
-        const coreNANDADictionary = ["Sıvı volüm fazlalığı", "Sıvı volüm eksikliği", "Etkisiz solunum örüntüsü", "Gaz değişiminde bozulma", "Akut ağrı", "Enfeksiyon riski", "Hipertermi"];
+        const defaultNanda = ["Sıvı volüm fazlalığı", "Sıvı volüm eksikliği", "Etkisiz solunum örüntüsü", "Gaz değişiminde bozulma", "Akut ağrı", "Enfeksiyon riski", "Hipertermi"];
 
-        // === GLOBAL STATES ===
+        // === 2. GLOBAL STATES ===
         let currentCase = getEmptyCase();
-        let bubbleTimeout;
-        let drugsDB = [];
+        let globalNandaDict = [];
+        let globalDrugs = [];
+        let globalFlowcharts = [];
         
-        // Yeni İlaç Formu Geçici Verileri
-        let tempDrugForm = { indications: [], sideEffects: [], interactions: [] };
+        let currentFlowchart = { id: null, name: "", nodes: [], links: [] };
+        
+        let bubbleTimeout;
+        let tempDrugForm = { indications: [], sideEffects: [] };
 
         // Flowchart State
         let isLinkMode = false;
-        let linkSourceId = null;
+        let linkSourceNodeId = null;
         let draggedNode = null;
         let dragOffset = { x: 0, y: 0 };
 
         function getEmptyCase() {
-            return { id: null, name: "", diagnosis: "", activeSymptoms: [], customSymptoms: [], nanda: [], interventions: [], flowNodes: [], flowLinks: [] };
+            return { id: null, name: "", notes: "", diagnosis: "", activeSymptoms: [], customSymptoms: [], nanda: [], interventions: [] };
         }
 
-        function init() {
+        // === 3. INIT & NAVIGATION ===
+        window.onload = () => {
             renderSymptoms();
-            updateNandaSuggestions();
+            
+            // Verileri Yükle
+            globalNandaDict = JSON.parse(localStorage.getItem('nurseSim_nanda_dict')) || defaultNanda;
+            globalDrugs = JSON.parse(localStorage.getItem('nurseSim_drugs')) || [];
+            globalFlowcharts = JSON.parse(localStorage.getItem('nurseSim_flowcharts')) || [];
+            
+            renderGlobalNandaDict();
+            renderDrugList();
+            updateFlowchartSelect();
             loadLibrary();
-            loadDrugs();
-            renderFlowchart();
+        };
+
+        function switchTab(btn, mode) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            const targetId = btn.getAttribute('data-target');
+            document.getElementById(targetId).classList.add('active');
+            
+            // Vaka kaydetme butonu sadece vaka sekmelerinde görünsün
+            document.getElementById('case-save-section').style.display = (mode === 'vaka') ? 'block' : 'none';
         }
 
         function startNewCase() {
-            if(confirm("Yeni vakaya başlamak istiyor musunuz?")) {
-                document.querySelectorAll('.body-part, .silhouette').forEach(el => {
-                    el.className.baseVal ? el.className.baseVal = el.className.baseVal.replace(/anim-[a-z-]+/g, '') : el.className = el.className.replace(/anim-[a-z-]+/g, '');
-                });
+            if(confirm("Yeni vakaya başlamak istiyor musunuz? Mevcut vaka verileri (kaydedilmediyse) silinir.")) {
+                document.querySelectorAll('.body-part, .silhouette').forEach(el => { el.className.baseVal ? el.className.baseVal = el.className.baseVal.replace(/anim-[a-z-]+/g, '') : el.className = el.className.replace(/anim-[a-z-]+/g, ''); });
                 document.querySelectorAll('.btn-symptom').forEach(btn => btn.classList.remove('active'));
                 hideBubble();
                 currentCase = getEmptyCase();
                 document.getElementById('case-name').value = '';
                 document.getElementById('disease-diagnosis').value = '';
-                renderCustomSymptoms(); renderLists(); renderFlowchart(); updateActiveSymptomsUI();
-                switchTab(document.querySelector('.tab[data-target="tab-status"]'));
+                document.getElementById('nursing-notes').value = '';
+                
+                renderCustomSymptoms(); renderCaseLists(); updateActiveSymptomsUI();
+                switchTab(document.querySelector('.tab[data-target="tab-status"]'), 'vaka');
             }
         }
 
-        // === BELİRTİLER ===
+        // === 4. SİMÜLASYON LOGİC ===
         function renderSymptoms() {
             const container = document.getElementById('symptoms-container');
             for (const [category, symptoms] of Object.entries(symptomsDB)) {
@@ -432,13 +480,13 @@
                 let btnGroup = document.createElement('div'); btnGroup.className = 'button-group';
                 symptoms.forEach(symp => {
                     let btn = document.createElement('button'); btn.className = 'btn-symptom'; btn.id = `btn-${symp.id}`;
-                    btn.innerText = symp.name; btn.onclick = () => toggleSymptom(symp);
-                    btnGroup.appendChild(btn);
+                    btn.innerText = symp.name; btn.onclick = () => toggleSymptom(symp); btnGroup.appendChild(btn);
                 });
                 catDiv.appendChild(btnGroup); container.appendChild(catDiv);
             }
             let customDiv = document.createElement('div'); customDiv.id = 'custom-buttons-container'; customDiv.className = 'button-group'; container.appendChild(customDiv);
         }
+
         function renderCustomSymptoms() {
             const container = document.getElementById('custom-buttons-container'); container.innerHTML = '';
             if(currentCase.customSymptoms.length > 0) {
@@ -449,6 +497,7 @@
                 });
             }
         }
+
         function addCustomSymptom() {
             const nameInput = document.getElementById('custom-symptom-name'); const quoteInput = document.getElementById('custom-symptom-quote');
             if(!nameInput.value.trim()) return alert('Belirti adı girin.');
@@ -456,6 +505,7 @@
             currentCase.customSymptoms.push(newSymp); nameInput.value = ''; quoteInput.value = '';
             renderCustomSymptoms(); toggleSymptom(newSymp);
         }
+
         function toggleSymptom(sympObj) {
             const btn = document.getElementById(`btn-${sympObj.id}`);
             const index = currentCase.activeSymptoms.indexOf(sympObj.id);
@@ -474,6 +524,7 @@
             }
             updateActiveSymptomsUI();
         }
+
         function updateActiveSymptomsUI() {
             const listEl = document.getElementById('active-symptoms-list'); listEl.innerHTML = '';
             if(currentCase.activeSymptoms.length === 0) return listEl.innerHTML = '<li style="background:transparent; border:none; color:gray;">Henüz belirti seçilmedi.</li>';
@@ -484,75 +535,84 @@
                 if(name) listEl.innerHTML += `<li>${name}</li>`;
             });
         }
+
         function showBubble(text) {
             const bubble = document.getElementById('speech-bubble'); bubble.innerText = text; bubble.classList.add('show');
             clearTimeout(bubbleTimeout); bubbleTimeout = setTimeout(() => bubble.classList.remove('show'), 4000);
         }
         function hideBubble() { document.getElementById('speech-bubble').classList.remove('show'); }
 
-        // === SEKMELER VE GİRİŞİM-NANDA ===
-        function switchTab(btn) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            btn.classList.add('active');
-            const targetId = btn.getAttribute('data-target');
-            document.getElementById(targetId).classList.add('active');
-            
-            // İlaç sekmesinde kaydet butonunu gizle
-            document.getElementById('case-save-section').style.display = (targetId === 'tab-drugs') ? 'none' : 'block';
-        }
-        
-        function updateNandaSuggestions() {
+        // === 5. NANDA SÖZLÜĞÜ VE VAKA BAKIM PLANI ===
+        function renderGlobalNandaDict() {
             const dataList = document.getElementById('nanda-suggestions'); dataList.innerHTML = '';
-            let saved = JSON.parse(localStorage.getItem('nurseSim_custom_nanda') || '[]');
-            let all = [...new Set([...coreNANDADictionary, ...saved])];
-            all.forEach(d => { let opt = document.createElement('option'); opt.value = d; dataList.appendChild(opt); });
+            const listEl = document.getElementById('global-nanda-list'); listEl.innerHTML = '';
+            
+            globalNandaDict.forEach((d, idx) => {
+                let opt = document.createElement('option'); opt.value = d; dataList.appendChild(opt);
+                listEl.innerHTML += `<li class="nanda-global-item">${d} <button class="delete-btn" onclick="removeGlobalNanda(${idx})">&times;</button></li>`;
+            });
         }
-        
-        function addToList(type) {
-            const input = document.getElementById(`${type}-input`); const val = input.value.trim(); if(!val) return;
-            if(type === 'nanda') {
-                currentCase.nanda.push(val);
-                let saved = JSON.parse(localStorage.getItem('nurseSim_custom_nanda') || '[]');
-                if(!coreNANDADictionary.includes(val) && !saved.includes(val)) { saved.push(val); localStorage.setItem('nurseSim_custom_nanda', JSON.stringify(saved)); updateNandaSuggestions(); }
+
+        function addGlobalNanda() {
+            const input = document.getElementById('global-nanda-input'); const val = input.value.trim();
+            if(!val) return;
+            if(!globalNandaDict.includes(val)) {
+                globalNandaDict.push(val);
+                localStorage.setItem('nurseSim_nanda_dict', JSON.stringify(globalNandaDict));
+                renderGlobalNandaDict();
             }
-            if(type === 'intervention') currentCase.interventions.push({ id: Date.now(), text: val, done: false });
-            input.value = ''; renderLists();
+            input.value = '';
         }
         
-        function removeFromList(type, indexOrId) {
+        function removeGlobalNanda(idx) {
+            globalNandaDict.splice(idx, 1);
+            localStorage.setItem('nurseSim_nanda_dict', JSON.stringify(globalNandaDict));
+            renderGlobalNandaDict();
+        }
+
+        function addCaseNanda() {
+            const val = document.getElementById('case-nanda-input').value.trim();
+            if(!val) return;
+            currentCase.nanda.push(val);
+            document.getElementById('case-nanda-input').value = '';
+            renderCaseLists();
+        }
+
+        function addIntervention() {
+            const val = document.getElementById('intervention-input').value.trim();
+            if(!val) return;
+            currentCase.interventions.push({ id: Date.now(), text: val, done: false });
+            document.getElementById('intervention-input').value = '';
+            renderCaseLists();
+        }
+
+        function removeCaseItem(type, indexOrId) {
             if(type === 'nanda') currentCase.nanda.splice(indexOrId, 1);
             if(type === 'intervention') currentCase.interventions = currentCase.interventions.filter(i => i.id !== indexOrId);
-            renderLists();
+            renderCaseLists();
         }
-        
+
         function toggleCheckbox(id) {
             let item = currentCase.interventions.find(i => i.id === id);
             if(item) item.done = !item.done;
-            renderLists();
+            renderCaseLists();
         }
 
-        // TİK YAPILANLARI AŞAĞIYA ALMA MANTIĞI
-        function renderLists() {
-            const nandaUl = document.getElementById('nanda-list'); nandaUl.innerHTML = '';
-            currentCase.nanda.forEach((item, idx) => { nandaUl.innerHTML += `<li>${item} <button class="delete-btn" onclick="removeFromList('nanda', ${idx})">&times;</button></li>`; });
+        function renderCaseLists() {
+            const nandaUl = document.getElementById('case-nanda-list'); nandaUl.innerHTML = '';
+            currentCase.nanda.forEach((item, idx) => { nandaUl.innerHTML += `<li class="nanda-item">${item} <button class="delete-btn" onclick="removeCaseItem('nanda', ${idx})">&times;</button></li>`; });
 
             const careUl = document.getElementById('intervention-list'); careUl.innerHTML = '';
-            // Önce yapılmayanlar, sonra yapılanlar
             const pending = currentCase.interventions.filter(i => !i.done);
             const completed = currentCase.interventions.filter(i => i.done);
             
             const renderCareItem = (item) => {
-                const checked = item.done ? 'checked' : '';
-                const doneClass = item.done ? 'done' : '';
-                const style = item.done ? 'text-decoration: line-through; color: gray;' : '';
-                const badge = item.done ? '<span class="badge-done">✓ Yapıldı</span>' : '';
                 return `
-                    <li class="intervention ${doneClass}">
-                        <input type="checkbox" ${checked} onclick="toggleCheckbox(${item.id})">
-                        <span style="${style}">${item.text}</span>
-                        ${badge}
-                        <button class="delete-btn" onclick="removeFromList('intervention', ${item.id})">&times;</button>
+                    <li class="intervention ${item.done ? 'done' : ''}">
+                        <input type="checkbox" ${item.done ? 'checked' : ''} onclick="toggleCheckbox(${item.id})">
+                        <span style="${item.done ? 'text-decoration: line-through; color: gray;' : ''}">${item.text}</span>
+                        ${item.done ? '<span class="badge-done">✓ Yapıldı</span>' : ''}
+                        <button class="delete-btn" onclick="removeCaseItem('intervention', ${item.id})">&times;</button>
                     </li>`;
             };
 
@@ -561,108 +621,113 @@
             completed.forEach(i => careUl.innerHTML += renderCareItem(i));
         }
 
-        // === 2D AKIŞ ŞEMASI (CANVAS & SVG) ===
+        // === 6. BAĞIMSIZ AKIŞ ŞEMASI (FLOWCHART) ===
         function addFlowNodeUI() {
             const shape = document.getElementById('flow-shape').value;
             const color = document.getElementById('flow-color').value;
-            // Ekranda merkeze yakın bir yer
-            currentCase.flowNodes.push({ id: 'node_' + Date.now(), shape, color, text: 'Metin Gir...', x: 100, y: 100 });
-            renderFlowchart();
+            currentFlowchart.nodes.push({ id: 'node_' + Date.now(), shape, color, text: 'Metin...', x: 150, y: 50 });
+            drawFlowchartDOM();
         }
 
         function toggleLinkMode() {
             isLinkMode = !isLinkMode;
-            linkSourceId = null;
+            linkSourceNodeId = null;
             const btn = document.getElementById('link-mode-btn');
-            if(isLinkMode) { btn.classList.add('active'); btn.innerText = "🔗 Ok Bağlantı Modu: AÇIK (Kutulara Tıklayın)"; } 
-            else { btn.classList.remove('active'); btn.innerText = "🔗 Ok Bağlantı Modu: KAPALI"; renderFlowchart(); }
-        }
-
-        function handleNodeClick(id) {
-            if(!isLinkMode) return;
-            if(!linkSourceId) {
-                linkSourceId = id;
-                document.getElementById(id).classList.add('link-target-hover');
+            const canvas = document.getElementById('flow-canvas');
+            const hint = document.getElementById('link-hint');
+            
+            if(isLinkMode) {
+                btn.classList.add('active'); btn.innerText = "🔗 BAĞLANTI MODU: AÇIK";
+                canvas.classList.add('linking'); hint.style.display = "inline";
             } else {
-                if(linkSourceId !== id) {
-                    let label = prompt("Ok üzerine metin yazın (Evet/Hayır/Şart vb.). Boş bırakabilirsiniz:") || "";
-                    currentCase.flowLinks.push({ id: 'link_'+Date.now(), source: linkSourceId, target: id, label: label });
-                }
-                document.getElementById(linkSourceId).classList.remove('link-target-hover');
-                linkSourceId = null;
-                renderFlowchart();
+                btn.classList.remove('active'); btn.innerText = "🔗 Bağlantı Modu: KAPALI";
+                canvas.classList.remove('linking'); hint.style.display = "none";
+                document.querySelectorAll('.flow-node').forEach(n => n.classList.remove('link-source'));
             }
         }
 
-        function deleteNode(id) {
-            currentCase.flowNodes = currentCase.flowNodes.filter(n => n.id !== id);
-            currentCase.flowLinks = currentCase.flowLinks.filter(l => l.source !== id && l.target !== id);
-            renderFlowchart();
+        function handleNodeClick(e, id) {
+            if(!isLinkMode) return;
+            e.stopPropagation(); // sürüklemeyi engelle
+            
+            if(!linkSourceNodeId) {
+                // Kaynak seç
+                linkSourceNodeId = id;
+                document.getElementById(id).classList.add('link-source');
+            } else {
+                // Hedef seç
+                if(linkSourceNodeId !== id) {
+                    let label = prompt("Ok üzerine metin yazın (İsteğe bağlı):") || "";
+                    currentFlowchart.links.push({ id: 'link_'+Date.now(), source: linkSourceNodeId, target: id, label: label });
+                }
+                document.getElementById(linkSourceNodeId).classList.remove('link-source');
+                linkSourceNodeId = null;
+                drawFlowLinks();
+            }
         }
 
-        function renderFlowchart() {
+        function drawFlowchartDOM() {
             const canvas = document.getElementById('flow-canvas');
-            // Sadece nodeları tutmak için eski nodeları temizle (SVG kalsın)
             Array.from(canvas.children).forEach(child => { if(child.tagName !== 'svg' && child.tagName !== 'SVG') canvas.removeChild(child); });
 
-            currentCase.flowNodes.forEach(node => {
+            currentFlowchart.nodes.forEach(node => {
                 let el = document.createElement('div');
                 el.className = `flow-node ${node.shape}`; el.id = node.id;
                 el.style.backgroundColor = node.color;
                 el.style.left = node.x + 'px'; el.style.top = node.y + 'px';
                 
                 let inner = document.createElement('div'); inner.className = 'node-inner'; inner.contentEditable = "true"; inner.innerText = node.text;
-                inner.oninput = (e) => { node.text = inner.innerText; };
-                inner.onmousedown = (e) => { e.stopPropagation(); }; // yazarken sürüklenmesin
+                inner.oninput = () => { node.text = inner.innerText; };
+                inner.onmousedown = (e) => { e.stopPropagation(); };
 
                 let delBtn = document.createElement('button'); delBtn.className = 'node-delete'; delBtn.innerHTML = 'X';
-                delBtn.onmousedown = (e) => { e.stopPropagation(); deleteNode(node.id); };
+                delBtn.onmousedown = (e) => { 
+                    e.stopPropagation(); 
+                    currentFlowchart.nodes = currentFlowchart.nodes.filter(n => n.id !== node.id);
+                    currentFlowchart.links = currentFlowchart.links.filter(l => l.source !== node.id && l.target !== node.id);
+                    drawFlowchartDOM();
+                };
 
                 el.appendChild(inner); el.appendChild(delBtn);
                 
-                // Mouse Events
                 el.onmousedown = (e) => {
-                    if(isLinkMode) { handleNodeClick(node.id); return; }
+                    if(isLinkMode) { handleNodeClick(e, node.id); return; }
                     if(e.target === inner || e.target === delBtn) return;
                     draggedNode = node;
-                    dragOffset.x = e.clientX - node.x; dragOffset.y = e.clientY - node.y;
-                    document.onmousemove = onCanvasMouseMove; document.onmouseup = onCanvasMouseUp;
+                    // Canvasa göre offset alıyoruz
+                    const rect = el.getBoundingClientRect();
+                    dragOffset.x = e.clientX - rect.left; dragOffset.y = e.clientY - rect.top;
+                    
+                    document.onmousemove = (ev) => {
+                        if(!draggedNode) return;
+                        const canvasRect = canvas.getBoundingClientRect();
+                        let newX = ev.clientX - canvasRect.left - dragOffset.x;
+                        let newY = ev.clientY - canvasRect.top - dragOffset.y;
+                        if(newX < 0) newX = 0; if(newY < 0) newY = 0;
+                        draggedNode.x = newX; draggedNode.y = newY;
+                        el.style.left = newX + 'px'; el.style.top = newY + 'px';
+                        drawFlowLinks();
+                    };
+                    document.onmouseup = () => { draggedNode = null; document.onmousemove = null; document.onmouseup = null; };
                 };
                 canvas.appendChild(el);
             });
-            drawLinks();
+            // DOM eklendikten sonra çizgileri çiz (ölçülerin oturması için ufak bir gecikme iyidir)
+            setTimeout(drawFlowLinks, 10);
         }
 
-        function onCanvasMouseMove(e) {
-            if(!draggedNode) return;
-            const canvasRect = document.getElementById('flow-canvas').getBoundingClientRect();
-            // Canvas sınırlarını koru
-            let newX = e.clientX - dragOffset.x; let newY = e.clientY - dragOffset.y;
-            if(newX < 0) newX = 0; if(newY < 0) newY = 0;
-            
-            draggedNode.x = newX; draggedNode.y = newY;
-            const el = document.getElementById(draggedNode.id);
-            if(el) { el.style.left = newX + 'px'; el.style.top = newY + 'px'; }
-            drawLinks();
-        }
-        function onCanvasMouseUp() { draggedNode = null; document.onmousemove = null; document.onmouseup = null; }
-
-        function drawLinks() {
+        function drawFlowLinks() {
             const container = document.getElementById('lines-container'); container.innerHTML = '';
-            currentCase.flowLinks.forEach((link, idx) => {
+            currentFlowchart.links.forEach((link, idx) => {
                 const sEl = document.getElementById(link.source); const tEl = document.getElementById(link.target);
                 if(!sEl || !tEl) return;
                 
-                // Merkezleri bul
-                const sRect = { w: sEl.offsetWidth, h: sEl.offsetHeight };
-                const tRect = { w: tEl.offsetWidth, h: tEl.offsetHeight };
-                const sNode = currentCase.flowNodes.find(n => n.id === link.source);
-                const tNode = currentCase.flowNodes.find(n => n.id === link.target);
-                
-                let sx = sNode.x + sRect.w / 2; let sy = sNode.y + sRect.h / 2;
-                let tx = tNode.x + tRect.w / 2; let ty = tNode.y + tRect.h / 2;
+                // Tam koordinat hesabı (canvasın sol üst köşesine göre)
+                let sx = parseFloat(sEl.style.left) + sEl.offsetWidth / 2;
+                let sy = parseFloat(sEl.style.top) + sEl.offsetHeight / 2;
+                let tx = parseFloat(tEl.style.left) + tEl.offsetWidth / 2;
+                let ty = parseFloat(tEl.style.top) + tEl.offsetHeight / 2;
 
-                // Okun hedefe girmeden hemen kenarında durması için ufak bir matematiksel kısaltma yapılabilir ama basic SVG iş görür
                 let line = document.createElementNS("http://www.w3.org/2000/svg", "line");
                 line.setAttribute("x1", sx); line.setAttribute("y1", sy);
                 line.setAttribute("x2", tx); line.setAttribute("y2", ty);
@@ -670,127 +735,117 @@
                 line.setAttribute("marker-end", "url(#arrowhead)");
                 container.appendChild(line);
 
+                let cx = (sx + tx) / 2; let cy = (sy + ty) / 2;
                 if(link.label) {
-                    let cx = (sx + tx) / 2; let cy = (sy + ty) / 2;
-                    
                     let bg = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-                    bg.setAttribute("x", cx - 15); bg.setAttribute("y", cy - 12); bg.setAttribute("width", 30); bg.setAttribute("height", 16); bg.setAttribute("fill", "white"); bg.setAttribute("rx", 3);
+                    bg.setAttribute("x", cx - 20); bg.setAttribute("y", cy - 10); bg.setAttribute("width", 40); bg.setAttribute("height", 20); bg.setAttribute("fill", "white"); bg.setAttribute("rx", 4);
                     container.appendChild(bg);
 
                     let text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                    text.setAttribute("x", cx); text.setAttribute("y", cy); text.setAttribute("text-anchor", "middle");
-                    text.setAttribute("font-size", "11px"); text.setAttribute("font-weight", "bold"); text.setAttribute("fill", "#00796b"); text.textContent = link.label;
-                    
-                    // Silme özelliği tıklayınca
+                    text.setAttribute("x", cx); text.setAttribute("y", cy + 4); text.setAttribute("text-anchor", "middle");
+                    text.setAttribute("font-size", "12px"); text.setAttribute("font-weight", "bold"); text.setAttribute("fill", "#00796b"); text.textContent = link.label;
                     text.style.cursor = 'pointer';
-                    text.onclick = () => { if(confirm("Oku silmek istiyor musunuz?")) { currentCase.flowLinks.splice(idx,1); drawLinks(); } };
-                    
+                    text.onclick = () => { if(confirm("Oku sil?")) { currentFlowchart.links.splice(idx,1); drawFlowLinks(); } };
                     container.appendChild(text);
                 } else {
-                    // Etiketsiz okun ortasına gizli bir hit-box koyalım silmek için
-                    let cx = (sx + tx) / 2; let cy = (sy + ty) / 2;
                     let hitbox = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-                    hitbox.setAttribute("cx", cx); hitbox.setAttribute("cy", cy); hitbox.setAttribute("r", 8); hitbox.setAttribute("fill", "transparent");
+                    hitbox.setAttribute("cx", cx); hitbox.setAttribute("cy", cy); hitbox.setAttribute("r", 10); hitbox.setAttribute("fill", "rgba(255,0,0,0.1)");
                     hitbox.style.cursor = 'pointer';
-                    hitbox.onclick = () => { if(confirm("Oku silmek istiyor musunuz?")) { currentCase.flowLinks.splice(idx,1); drawLinks(); } };
+                    hitbox.onclick = () => { if(confirm("Oku sil?")) { currentFlowchart.links.splice(idx,1); drawFlowLinks(); } };
                     container.appendChild(hitbox);
                 }
             });
         }
 
-        // === İLAÇ DEFTERİ (MİNİ FARMAKOLOJİ) ===
-        function loadDrugs() {
-            drugsDB = JSON.parse(localStorage.getItem('nurseSim_drugs')) || [];
-            renderDrugList();
+        function clearFlowchart() {
+            if(confirm("Ekrandaki şemayı temizlemek istiyor musunuz?")) {
+                currentFlowchart = { id: null, name: "", nodes: [], links: [] };
+                document.getElementById('flow-name').value = "";
+                drawFlowchartDOM();
+            }
         }
 
+        function saveGlobalFlowchart() {
+            const name = document.getElementById('flow-name').value.trim();
+            if(!name) return alert("Lütfen şemaya bir ad verin.");
+            currentFlowchart.name = name;
+            currentFlowchart.id = currentFlowchart.id || 'flow_' + Date.now();
+            
+            const idx = globalFlowcharts.findIndex(f => f.id === currentFlowchart.id);
+            if(idx > -1) globalFlowcharts[idx] = currentFlowchart;
+            else globalFlowcharts.push(currentFlowchart);
+            
+            localStorage.setItem('nurseSim_flowcharts', JSON.stringify(globalFlowcharts));
+            alert("Şema Genel Kütüphaneye Kaydedildi!");
+            updateFlowchartSelect();
+        }
+
+        function updateFlowchartSelect() {
+            const sel = document.getElementById('saved-flows-select');
+            sel.innerHTML = '<option value="">-- Kayıtlı Şemalarım --</option>';
+            globalFlowcharts.forEach(f => {
+                let opt = document.createElement('option'); opt.value = f.id; opt.innerText = f.name; sel.appendChild(opt);
+            });
+        }
+
+        function loadSelectedFlowchart() {
+            const id = document.getElementById('saved-flows-select').value;
+            if(!id) return;
+            const flow = globalFlowcharts.find(f => f.id === id);
+            if(flow) {
+                currentFlowchart = JSON.parse(JSON.stringify(flow));
+                document.getElementById('flow-name').value = currentFlowchart.name;
+                drawFlowchartDOM();
+            }
+        }
+
+        // === 7. GENEL İLAÇ DEFTERİ ===
         function addDrugTag(type) {
             const input = document.getElementById(type === 'indications' ? 'df-ind-input' : 'df-side-input');
             const val = input.value.trim(); if(!val) return;
             tempDrugForm[type].push(val); input.value = '';
             renderDrugTags(type);
         }
-
         function renderDrugTags(type) {
             const container = document.getElementById(type === 'indications' ? 'df-ind-tags' : 'df-side-tags');
             container.innerHTML = '';
-            tempDrugForm[type].forEach((tag, idx) => {
-                container.innerHTML += `<div class="tag-chip">${tag} <span onclick="removeDrugTag('${type}', ${idx})">&times;</span></div>`;
-            });
+            tempDrugForm[type].forEach((tag, idx) => { container.innerHTML += `<div class="tag-chip">${tag} <span onclick="tempDrugForm['${type}'].splice(${idx},1); renderDrugTags('${type}')">&times;</span></div>`; });
         }
-
-        function removeDrugTag(type, idx) { tempDrugForm[type].splice(idx, 1); renderDrugTags(type); }
-
-        function addDrugInteraction() {
-            const name = document.getElementById('df-inter-name').value.trim();
-            const risk = document.getElementById('df-inter-risk').value;
-            if(!name) return;
-            tempDrugForm.interactions.push({ name, risk }); document.getElementById('df-inter-name').value = '';
-            renderInteractions();
-        }
-
-        function renderInteractions() {
-            const list = document.getElementById('df-inter-list'); list.innerHTML = '';
-            tempDrugForm.interactions.forEach((inter, idx) => {
-                let color = inter.risk === 'Yüksek' ? 'red' : 'orange';
-                list.innerHTML += `<div style="color:${color};">⚠️ ${inter.name} (${inter.risk} Risk) <button style="border:none;background:none;cursor:pointer;" onclick="tempDrugForm.interactions.splice(${idx},1); renderInteractions();">❌</button></div>`;
-            });
-        }
-
         function saveNewDrug() {
             const name = document.getElementById('df-name').value.trim(); const active = document.getElementById('df-active').value.trim();
-            const cat = document.getElementById('df-category').value;
             if(!name || !active) return alert("İlaç Adı ve Etken Madde zorunludur!");
-            
-            const newDrug = {
-                id: 'drug_' + Date.now(), name, active, category: cat,
-                indications: [...tempDrugForm.indications], sideEffects: [...tempDrugForm.sideEffects], interactions: [...tempDrugForm.interactions]
-            };
-            
-            drugsDB.push(newDrug); localStorage.setItem('nurseSim_drugs', JSON.stringify(drugsDB));
-            
-            // Formu sıfırla
+            globalDrugs.push({ id: 'drug_' + Date.now(), name, active, category: document.getElementById('df-category').value, indications: [...tempDrugForm.indications], sideEffects: [...tempDrugForm.sideEffects] });
+            localStorage.setItem('nurseSim_drugs', JSON.stringify(globalDrugs));
             document.getElementById('df-name').value = ''; document.getElementById('df-active').value = '';
-            tempDrugForm = { indications: [], sideEffects: [], interactions: [] };
-            renderDrugTags('indications'); renderDrugTags('sideEffects'); renderInteractions();
-            document.getElementById('drug-form-panel').style.display = 'none';
-            
-            alert("✅ İlaç kütüphaneye eklendi!"); renderDrugList();
+            tempDrugForm = { indications: [], sideEffects: [] }; renderDrugTags('indications'); renderDrugTags('sideEffects');
+            document.getElementById('drug-form-panel').style.display = 'none'; alert("İlaç Sözlüğe Eklendi!"); renderDrugList();
         }
-
         function filterDrugs() { renderDrugList(document.getElementById('drug-search').value.toLowerCase()); }
-
         function renderDrugList(query = "") {
             const container = document.getElementById('drug-list-container'); container.innerHTML = '';
-            const filtered = drugsDB.filter(d => 
-                d.name.toLowerCase().includes(query) || d.active.toLowerCase().includes(query) ||
-                d.indications.some(i => i.toLowerCase().includes(query)) || d.sideEffects.some(s => s.toLowerCase().includes(query))
-            );
-
+            const filtered = globalDrugs.filter(d => d.name.toLowerCase().includes(query) || d.active.toLowerCase().includes(query) || d.indications.some(i => i.toLowerCase().includes(query)));
             if(filtered.length === 0) return container.innerHTML = '<div style="color:gray; padding:10px;">İlaç bulunamadı...</div>';
-
             filtered.forEach(d => {
                 let card = document.createElement('div'); card.className = 'drug-card';
                 card.innerHTML = `
                     <div class="drug-header" onclick="this.nextElementSibling.classList.toggle('open')">
                         <span>💊 ${d.name} <small style="color:gray; font-weight:normal;">(${d.active})</small></span>
-                        <span style="font-size:0.8rem; background:var(--primary-light); color:white; padding:2px 8px; border-radius:10px;">${d.category}</span>
+                        <span style="font-size:0.8rem; background:#e8eaf6; color:var(--global-tab); padding:2px 8px; border-radius:10px;">${d.category}</span>
                     </div>
                     <div class="drug-body">
-                        <b>Endikasyonlar:</b> <div style="display:flex;gap:5px;flex-wrap:wrap;margin:5px 0;">${d.indications.map(i=>`<span class="tag-chip" style="background:#e0f7fa; color:#006064;">${i}</span>`).join('') || '-'}</div>
-                        <b>Yan Etkiler:</b> <div style="display:flex;gap:5px;flex-wrap:wrap;margin:5px 0;">${d.sideEffects.map(i=>`<span class="tag-chip" style="background:#fce4ec; color:#880e4f;">${i}</span>`).join('') || '-'}</div>
-                        ${d.interactions.map(i => `<div class="interaction-alert ${i.risk==='Orta'?'medium':''}"><b>⚠️ ETKİLEŞİM (${i.risk}):</b> ${i.name} ile kullanımı risklidir.</div>`).join('')}
-                    </div>
-                `;
+                        <b>Endikasyonlar:</b> <div style="display:flex;gap:5px;flex-wrap:wrap;margin:5px 0;">${d.indications.map(i=>`<span class="tag-chip">${i}</span>`).join('') || '-'}</div>
+                        <b>Yan Etkiler:</b> <div style="display:flex;gap:5px;flex-wrap:wrap;margin:5px 0;">${d.sideEffects.map(i=>`<span class="tag-chip" style="color:var(--accent); border-color:var(--accent);">${i}</span>`).join('') || '-'}</div>
+                    </div>`;
                 container.appendChild(card);
             });
         }
 
-        // === LOCALSTORAGE VAKA KÜTÜPHANESİ ===
+        // === 8. VAKA KAYDETME KÜTÜPHANESİ ===
         function toggleLibrary() { document.getElementById('library-panel').classList.toggle('open'); loadLibrary(); }
         function saveCase() {
             const caseNameInput = document.getElementById('case-name').value.trim();
             if(!caseNameInput) return alert("Lütfen kaydetmeden önce bir Vaka Adı girin.");
+            currentCase.notes = document.getElementById('nursing-notes').value;
             currentCase.diagnosis = document.getElementById('disease-diagnosis').value;
             currentCase.id = currentCase.id || 'case_' + Date.now(); currentCase.date = new Date().toLocaleString('tr-TR'); currentCase.name = caseNameInput;
 
@@ -798,21 +853,21 @@
             const existIndex = cases.findIndex(c => c.id === currentCase.id);
             if(existIndex > -1) cases[existIndex] = currentCase; else cases.push(currentCase);
             localStorage.setItem('nurseSim_cases', JSON.stringify(cases));
-            alert("✅ Vaka (Tüm çizimler ve notlar dahil) kütüphaneye kaydedildi!"); loadLibrary();
+            alert("✅ Vaka Başarıyla Kütüphaneye Kaydedildi!"); loadLibrary();
         }
         function loadLibrary() {
             const cases = JSON.parse(localStorage.getItem('nurseSim_cases') || '[]');
             const list = document.getElementById('saved-cases-list'); list.innerHTML = '';
-            if(cases.length === 0) return list.innerHTML = '<li style="padding:1rem; color:#757575;">Henüz kaydedilmiş vaka yok.</li>';
+            if(cases.length === 0) return list.innerHTML = '<li style="padding:1rem; color:#757575;">Henüz vaka yok.</li>';
             cases.forEach(c => {
                 let li = document.createElement('li'); li.className = 'case-card';
-                li.innerHTML = `<button class="case-delete" onclick="deleteCase(event, '${c.id}')">&times;</button><div class="case-title">${c.name}</div><div class="case-date">${c.date}</div>`;
+                li.innerHTML = `<button class="case-delete" onclick="deleteCase(event, '${c.id}')">&times;</button><div style="font-weight:bold; color:var(--primary-dark);">${c.name}</div><div style="font-size:0.8rem; color:gray;">${c.date}</div>`;
                 li.onclick = () => restoreCase(c); list.appendChild(li);
             });
         }
         function deleteCase(event, caseId) {
             event.stopPropagation();
-            if(confirm('Bu vakayı kütüphaneden silmek istediğinize emin misiniz?')) {
+            if(confirm('Vakayı silmek istediğinize emin misiniz?')) {
                 let cases = JSON.parse(localStorage.getItem('nurseSim_cases') || '[]');
                 cases = cases.filter(c => c.id !== caseId); localStorage.setItem('nurseSim_cases', JSON.stringify(cases));
                 if(currentCase.id === caseId) startNewCase(); else loadLibrary();
@@ -823,10 +878,11 @@
             document.querySelectorAll('.btn-symptom').forEach(btn => btn.classList.remove('active')); hideBubble();
             
             currentCase = JSON.parse(JSON.stringify(caseData));
-            if(!currentCase.flowNodes) currentCase.flowNodes = []; if(!currentCase.flowLinks) currentCase.flowLinks = [];
             
-            document.getElementById('case-name').value = currentCase.name; document.getElementById('disease-diagnosis').value = currentCase.diagnosis;
-            renderCustomSymptoms(); renderLists(); renderFlowchart();
+            document.getElementById('case-name').value = currentCase.name; 
+            document.getElementById('nursing-notes').value = currentCase.notes || "";
+            document.getElementById('disease-diagnosis').value = currentCase.diagnosis;
+            renderCustomSymptoms(); renderCaseLists();
 
             currentCase.activeSymptoms.forEach(sympId => {
                 let sympObj = null;
@@ -839,9 +895,8 @@
                 }
             });
             updateActiveSymptomsUI(); document.getElementById('library-panel').classList.remove('open');
+            switchTab(document.querySelector('.tab[data-target="tab-status"]'), 'vaka');
         }
-
-        window.onload = init;
     </script>
 </body>
 </html>
