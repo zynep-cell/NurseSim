@@ -110,30 +110,25 @@
         .lab-panic { background: #ffebee; animation: blink-bg 1s infinite alternate; }
         @keyframes blink-bg { from { background: #fff; } to { background: #ffcdd2; } }
 
-        /* === 2D AKIŞ ŞEMASI (GENEL KÜTÜPHANE) === */
+        /* === 2D AKIŞ ŞEMASI === */
         .info-box { background: #e3f2fd; border-left: 4px solid #1976d2; padding: 10px 15px; border-radius: 4px; margin-bottom: 15px; font-size: 0.85rem; color: #0d47a1; }
         .flow-toolbar { background: var(--bg); padding: 10px; border-radius: 8px; margin-bottom: 10px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; border-left: 4px solid var(--global-tab); }
         .flow-toolbar select, .flow-toolbar input { padding: 6px; border-radius: 4px; border: 1px solid var(--border); outline: none; }
         .link-mode-btn { background: #333; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.3s; }
         .link-mode-btn.active { background: var(--accent); box-shadow: 0 0 8px rgba(255,82,82,0.8); animation: pulse-link 1.5s infinite; }
         @keyframes pulse-link { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-
         .flow-canvas { flex: 1; background: #fafcfc; border: 1px dashed var(--border); border-radius: 8px; position: relative; overflow: hidden; min-height: 400px; cursor: grab; }
         .flow-canvas.linking { cursor: crosshair; }
         #flow-svg-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
-        
         .flow-node { position: absolute; min-width: 120px; padding: 10px; text-align: center; font-weight: 600; font-size: 0.85rem; color: white; display: flex; justify-content: center; align-items: center; cursor: grab; z-index: 2; box-shadow: 0 3px 6px rgba(0,0,0,0.15); transition: outline 0.2s; user-select: none; }
         .flow-node:active { cursor: grabbing; box-shadow: 0 5px 12px rgba(0,0,0,0.3); }
         .flow-node.link-source { outline: 4px solid var(--accent); outline-offset: 3px; z-index: 10; }
-        
         .shape-rect { border-radius: 6px; } .shape-ellipse { border-radius: 40px; padding: 10px 20px; }
         .shape-rhombus { clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); padding: 20px; min-height: 80px; min-width: 100px; }
         .shape-parallelogram { clip-path: polygon(15% 0, 100% 0, 85% 100%, 0% 100%); padding: 10px 20px; }
-        
         .node-inner { outline: none; width: 100%; text-align: center; }
         .node-delete { position: absolute; top: -10px; right: -10px; background: var(--accent); color: white; border: none; border-radius: 50%; width: 22px; height: 22px; font-size: 12px; cursor: pointer; display: none; justify-content: center; align-items: center; z-index: 3; }
         .flow-node:hover .node-delete { display: flex; }
-        
         .flow-save-bar { display: flex; gap: 10px; padding: 10px; background: #e8eaf6; border-radius: 8px; margin-top: 10px; align-items: center; }
 
         /* === İLAÇ DEFTERİ === */
@@ -152,12 +147,12 @@
         .interaction-alert.medium { background: #fff8e1; border-left-color: var(--warning); }
         #drug-form-panel { background: #f9f9f9; padding: 15px; border: 1px solid var(--border); border-radius: 8px; display: none; margin-bottom: 10px; }
 
-        /* Kaydetme Butonu */
+        /* Kaydetme Butonu (Sadece Vaka İçin, Alta Sabit) */
         .save-section { margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--border); }
         .btn-save { width: 100%; background: var(--primary-dark); color: white; border: none; padding: 1rem; border-radius: 8px; font-size: 1rem; cursor: pointer; font-weight: bold; transition: background 0.3s; }
         .btn-save:hover { background: #00332a; }
 
-        /* KÜTÜPHANE PANELİ */
+        /* KÜTÜPHANE PANELİ (Vakalar) */
         .library-panel { position: absolute; top: 0; right: -400px; width: 350px; height: 100%; background: white; box-shadow: -5px 0 15px rgba(0,0,0,0.1); transition: right 0.3s ease; z-index: 20; display: flex; flex-direction: column; }
         .library-panel.open { right: 0; }
         .library-header { background: var(--primary); color: white; padding: 1rem; display: flex; justify-content: space-between; align-items: center; }
@@ -237,7 +232,7 @@
                 <div class="tab-content active" id="tab-status">
                     <div class="form-group">
                         <label>Hastaya Dair Gözlemler / Hemşirelik Notları</label>
-                        <textarea id="nursing-notes" placeholder="Hastanın genel görünümü, vital bulguları, şikayetleri..."></textarea>
+                        <textarea id="nursing-notes" placeholder="Hastanın genel görünümü, vital bulguları, şikayetleri... Lab sonuçları da eklendikçe otomatik buraya düşecektir."></textarea>
                     </div>
                     <div class="form-group">
                         <label>Klinik Analiz & Tıbbi Tanı</label>
@@ -245,17 +240,55 @@
                     </div>
                 </div>
 
-                <!-- SEKME YENİ: Lab Bulguları -->
+                <!-- SEKME YENİ: Lab Bulguları (DİNAMİK) -->
                 <div class="tab-content" id="tab-lab">
-                    <div class="info-box" style="border-left-color:var(--primary); color:var(--primary-dark); background:#e0f2f1;">
-                        <strong>🔬 Klinik Laboratuvar:</strong> Test değerlerini girin. NCLEX/Merck standartlarına göre otomatik değerlendirilecek ve Kritik (Panic) değerlerde Bakım Planına acil görev eklenecektir.
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <label style="margin:0; font-size:1.1rem; color:var(--primary-dark);">Vakaya Lab Sonucu Gir</label>
+                        <button class="btn-add btn-add-global" style="padding:6px 12px; font-size:0.85rem;" onclick="document.getElementById('lab-form-panel').style.display='block'">+ Kütüphaneye Yeni Test Türü Tanımla</button>
                     </div>
-                    
-                    <div class="input-row" style="background:#f4f6f8; padding:15px; border-radius:8px; border:1px solid var(--border);">
-                        <select id="lab-category" onchange="renderLabSelects()"></select>
-                        <select id="lab-test"></select>
-                        <input type="number" step="0.1" id="lab-value" placeholder="Değer girin">
-                        <button class="btn-add" onclick="addCaseLab()">Ekle</button>
+
+                    <!-- Yeni Test Ekleme Paneli -->
+                    <div id="lab-form-panel" style="display:none; background:#f9f9f9; padding:15px; border-radius:8px; margin-bottom:15px; border:1px solid var(--border);">
+                        <h4 style="color:var(--global-tab); margin-bottom:10px;">Genel Sözlüğe Yeni Test (Örn: TSH, CRP) Ekle</h4>
+                        <div class="input-row">
+                            <select id="new-lab-cat" onchange="if(this.value==='Diğer') document.getElementById('new-lab-cat-custom').style.display='block'; else document.getElementById('new-lab-cat-custom').style.display='none';"></select>
+                            <input type="text" id="new-lab-cat-custom" placeholder="Yeni Kategori Adı (Örn: Seroloji)" style="display:none;">
+                        </div>
+                        <div class="input-row">
+                            <input type="text" id="new-lab-name" placeholder="Test Adı (Örn: TSH)">
+                            <input type="text" id="new-lab-unit" placeholder="Birim (Örn: mIU/L)">
+                        </div>
+                        <label style="font-size:0.8rem; color:gray;">Varsayılan Referans Aralıkları</label>
+                        <div class="input-row" style="margin-top:5px;">
+                            <input type="number" step="any" id="new-lab-min" placeholder="Ref Min">
+                            <input type="number" step="any" id="new-lab-max" placeholder="Ref Max">
+                            <input type="number" step="any" id="new-lab-cmin" placeholder="Kritik Min">
+                            <input type="number" step="any" id="new-lab-cmax" placeholder="Kritik Max">
+                        </div>
+                        <div style="text-align:right;">
+                            <button class="btn-header" style="background:#9e9e9e;" onclick="document.getElementById('lab-form-panel').style.display='none'">İptal</button>
+                            <button class="btn-add btn-add-global" onclick="saveNewGlobalLabTest()">Sözlüğe Kaydet</button>
+                        </div>
+                    </div>
+
+                    <!-- Vaka Giriş Formu -->
+                    <div style="background:#f4f6f8; padding:15px; border-radius:8px; border:1px solid var(--border);">
+                        <div class="input-row">
+                            <select id="lab-category" onchange="renderLabSelects()"></select>
+                            <select id="lab-test" onchange="autoFillLabRefs()"></select>
+                        </div>
+                        <div class="input-row">
+                            <input type="number" step="any" id="lab-value" placeholder="Sonuç (Hasta Değeri)">
+                            <span id="lab-unit-display" style="font-weight:bold; color:gray; width:80px; text-align:center;">-</span>
+                        </div>
+                        <label style="font-size:0.8rem; color:gray;">Kuruma / Hastaneye Özel Referansları ve Kritik Değerleri Alt Kısımdan Değiştirebilirsiniz:</label>
+                        <div class="input-row" style="margin-top:5px; gap:4px;">
+                            <input type="number" step="any" id="case-lab-min" title="Referans Alt Sınır" placeholder="Ref Min">
+                            <input type="number" step="any" id="case-lab-max" title="Referans Üst Sınır" placeholder="Ref Max">
+                            <input type="number" step="any" id="case-lab-cmin" title="Kritik (Panic) Alt Sınır" placeholder="Kritik Min">
+                            <input type="number" step="any" id="case-lab-cmax" title="Kritik (Panic) Üst Sınır" placeholder="Kritik Max">
+                            <button class="btn-add" onclick="addCaseLab()" style="padding:0.7rem 1.5rem;">Sonucu Ekle</button>
+                        </div>
                     </div>
 
                     <table class="lab-table">
@@ -263,7 +296,7 @@
                             <tr>
                                 <th>Test Adı</th>
                                 <th>Sonuç</th>
-                                <th>Referans (Min-Max)</th>
+                                <th>Hastane Referansı</th>
                                 <th>İşlem</th>
                             </tr>
                         </thead>
@@ -378,7 +411,7 @@
     </div>
 
     <script>
-        // === 1. SİMÜLASYON VERİTABANI (BELİRTİLER) ===
+        // === 1. SİMÜLASYON VERİTABANI (BELİRTİLER TAMAMEN AYRIŞTIRILDI) ===
         const symptomsDB = {
             "Respiratuar": [
                 { id: "s1", name: "Dispne", part: "part-chest", animClass: "anim-fast-breath", quote: "Nefes alamıyorum!" },
@@ -417,28 +450,16 @@
             ]
         };
 
-        // === LAB REFERANS VERİTABANI (NCLEX/Merck Standartları) ===
-        const labDB = {
-            "Hemogram (CBC)": [
-                { id: "l_hb", name: "Hemoglobin (Hb)", unit: "g/dL", min: 12.0, max: 16.0, cMin: 7.0, cMax: 20.0 },
-                { id: "l_wbc", name: "WBC (Lökosit)", unit: "10^3/uL", min: 4.5, max: 11.0, cMin: 2.0, cMax: 30.0 },
-                { id: "l_plt", name: "Platelet (PLT)", unit: "10^3/uL", min: 150, max: 400, cMin: 20, cMax: 1000 },
-                { id: "l_hct", name: "Hematokrit (Htc)", unit: "%", min: 36, max: 48, cMin: 21, cMax: 60 }
-            ],
-            "Biyokimya": [
-                { id: "l_na", name: "Sodyum (Na)", unit: "mEq/L", min: 135, max: 145, cMin: 120, cMax: 160 },
-                { id: "l_k", name: "Potasyum (K)", unit: "mEq/L", min: 3.5, max: 5.0, cMin: 2.5, cMax: 6.0 },
-                { id: "l_glu", name: "Glukoz (Açlık)", unit: "mg/dL", min: 70, max: 100, cMin: 40, cMax: 400 },
-                { id: "l_cre", name: "Kreatinin", unit: "mg/dL", min: 0.6, max: 1.2, cMin: 0, cMax: 4.0 },
-                { id: "l_bun", name: "BUN", unit: "mg/dL", min: 10, max: 20, cMin: 0, cMax: 100 }
-            ],
-            "Kan Gazı (ABG)": [
-                { id: "l_ph", name: "pH", unit: "", min: 7.35, max: 7.45, cMin: 7.20, cMax: 7.60 },
-                { id: "l_pco2", name: "pCO2", unit: "mmHg", min: 35, max: 45, cMin: 20, cMax: 60 },
-                { id: "l_po2", name: "pO2", unit: "mmHg", min: 80, max: 100, cMin: 40, cMax: 200 },
-                { id: "l_hco3", name: "HCO3", unit: "mEq/L", min: 22, max: 26, cMin: 10, cMax: 40 }
-            ]
-        };
+        // Varsayılan Lab Testleri (Eğer lokal depoda yoksa)
+        const defaultLabTests = [
+            { category: "Hemogram (CBC)", id: "l_hb", name: "Hemoglobin (Hb)", unit: "g/dL", min: 12.0, max: 16.0, cMin: 7.0, cMax: 20.0 },
+            { category: "Hemogram (CBC)", id: "l_wbc", name: "WBC (Lökosit)", unit: "10^3/uL", min: 4.5, max: 11.0, cMin: 2.0, cMax: 30.0 },
+            { category: "Hemogram (CBC)", id: "l_plt", name: "Platelet (PLT)", unit: "10^3/uL", min: 150, max: 400, cMin: 20, cMax: 1000 },
+            { category: "Biyokimya", id: "l_na", name: "Sodyum (Na)", unit: "mEq/L", min: 135, max: 145, cMin: 120, cMax: 160 },
+            { category: "Biyokimya", id: "l_k", name: "Potasyum (K)", unit: "mEq/L", min: 3.5, max: 5.0, cMin: 2.5, cMax: 6.0 },
+            { category: "Biyokimya", id: "l_glu", name: "Glukoz (Açlık)", unit: "mg/dL", min: 70, max: 100, cMin: 40, cMax: 400 },
+            { category: "Kan Gazı (ABG)", id: "l_ph", name: "pH", unit: "", min: 7.35, max: 7.45, cMin: 7.20, cMax: 7.60 }
+        ];
 
         const defaultNanda = ["Sıvı volüm fazlalığı", "Sıvı volüm eksikliği", "Etkisiz solunum örüntüsü", "Gaz değişiminde bozulma", "Akut ağrı", "Enfeksiyon riski", "Hipertermi"];
 
@@ -448,6 +469,9 @@
         let globalDrugs = [];
         let globalDrugCats = ["Analjezik", "Antiinflamatuar", "Antibiyotik", "Kardiyovasküler", "Gastrointestinal", "Solunum Sistemi"];
         let globalFlowcharts = [];
+        let globalLabCats = ["Hemogram (CBC)", "Biyokimya", "Kan Gazı (ABG)"];
+        let globalLabTests = [];
+        
         let currentFlowchart = { id: null, name: "", nodes: [], links: [] };
         
         let bubbleTimeout;
@@ -456,9 +480,7 @@
         // Flowchart State
         let isLinkMode = false; let linkSourceNodeId = null; let draggedNode = null; let dragOffset = { x: 0, y: 0 };
 
-        function getEmptyCase() {
-            return { id: null, name: "", notes: "", diagnosis: "", activeSymptoms: [], customSymptoms: [], carePlans: [], labs: [] };
-        }
+        function getEmptyCase() { return { id: null, name: "", notes: "", diagnosis: "", activeSymptoms: [], customSymptoms: [], carePlans: [], labs: [] }; }
 
         // === 3. INIT & SEKME YÖNETİMİ ===
         window.onload = () => {
@@ -469,11 +491,14 @@
             globalDrugCats = JSON.parse(localStorage.getItem('nurseSim_drug_cats')) || globalDrugCats;
             globalFlowcharts = JSON.parse(localStorage.getItem('nurseSim_flowcharts')) || [];
             
+            globalLabCats = JSON.parse(localStorage.getItem('nurseSim_lab_cats')) || globalLabCats;
+            globalLabTests = JSON.parse(localStorage.getItem('nurseSim_lab_tests')) || defaultLabTests;
+            
             renderGlobalNandaDict();
             renderDrugCategories();
             renderDrugList();
             updateFlowchartSelect();
-            initLabSelects();
+            initLabCategorySelects();
             loadLibrary();
         };
 
@@ -497,7 +522,7 @@
             }
         }
 
-        // === 4. SİMÜLASYON LOGİC ===
+        // === 4. SİMÜLASYON LOGİC (BELİRTİLER) ===
         function renderSymptoms() {
             const container = document.getElementById('symptoms-container');
             for (const [category, symptoms] of Object.entries(symptomsDB)) {
@@ -532,16 +557,8 @@
         function toggleSymptom(sympObj) {
             const btn = document.getElementById(`btn-${sympObj.id}`); const index = currentCase.activeSymptoms.indexOf(sympObj.id);
             let targetPart; if(sympObj.part === "body-wrapper") targetPart = document.getElementById("silhouette"); else if (sympObj.part && sympObj.part !== "none") targetPart = document.getElementById(sympObj.part);
-
-            if (index > -1) {
-                currentCase.activeSymptoms.splice(index, 1);
-                if(btn) btn.classList.remove('active');
-                if(targetPart && sympObj.animClass) targetPart.classList.remove(sympObj.animClass); hideBubble();
-            } else {
-                currentCase.activeSymptoms.push(sympObj.id);
-                if(btn) btn.classList.add('active');
-                if(targetPart && sympObj.animClass) targetPart.classList.add(sympObj.animClass); showBubble(sympObj.quote);
-            }
+            if (index > -1) { currentCase.activeSymptoms.splice(index, 1); if(btn) btn.classList.remove('active'); if(targetPart && sympObj.animClass) targetPart.classList.remove(sympObj.animClass); hideBubble(); } 
+            else { currentCase.activeSymptoms.push(sympObj.id); if(btn) btn.classList.add('active'); if(targetPart && sympObj.animClass) targetPart.classList.add(sympObj.animClass); showBubble(sympObj.quote); }
             updateActiveSymptomsUI();
         }
 
@@ -558,58 +575,127 @@
         function showBubble(text) { const bubble = document.getElementById('speech-bubble'); bubble.innerText = text; bubble.classList.add('show'); clearTimeout(bubbleTimeout); bubbleTimeout = setTimeout(() => bubble.classList.remove('show'), 4000); }
         function hideBubble() { document.getElementById('speech-bubble').classList.remove('show'); }
 
-        // === YENİ MODÜL: LAB BULGULARI ===
-        function initLabSelects() {
-            const catSel = document.getElementById('lab-category'); catSel.innerHTML = '<option value="">-- Kategori --</option>';
-            Object.keys(labDB).forEach(cat => { catSel.innerHTML += `<option value="${cat}">${cat}</option>`; });
+        // === YENİ MODÜL: LAB BULGULARI DİNAMİK MİMARİSİ ===
+        function initLabCategorySelects() {
+            const caseCatSel = document.getElementById('lab-category'); caseCatSel.innerHTML = '<option value="">-- Kategori Seçin --</option>';
+            const newCatSel = document.getElementById('new-lab-cat'); newCatSel.innerHTML = '<option value="">-- Kategori Seçin --</option>';
+            
+            globalLabCats.forEach(cat => {
+                caseCatSel.innerHTML += `<option value="${cat}">${cat}</option>`;
+                newCatSel.innerHTML += `<option value="${cat}">${cat}</option>`;
+            });
+            newCatSel.innerHTML += '<option value="Diğer">Diğer (Yeni Kategori)...</option>';
         }
-        
+
         function renderLabSelects() {
             const cat = document.getElementById('lab-category').value;
             const testSel = document.getElementById('lab-test'); testSel.innerHTML = '<option value="">-- Test Seçin --</option>';
-            if(cat && labDB[cat]) {
-                labDB[cat].forEach(t => { testSel.innerHTML += `<option value="${t.id}">${t.name} (${t.unit})</option>`; });
+            document.getElementById('lab-unit-display').innerText = "-";
+            document.getElementById('case-lab-min').value = ""; document.getElementById('case-lab-max').value = "";
+            document.getElementById('case-lab-cmin').value = ""; document.getElementById('case-lab-cmax').value = "";
+            
+            if(cat) {
+                const testsInCat = globalLabTests.filter(t => t.category === cat);
+                testsInCat.forEach(t => { testSel.innerHTML += `<option value="${t.id}">${t.name}</option>`; });
             }
         }
 
+        function autoFillLabRefs() {
+            const testId = document.getElementById('lab-test').value;
+            if(!testId) return;
+            const testDef = globalLabTests.find(t => t.id === testId);
+            if(testDef) {
+                document.getElementById('lab-unit-display').innerText = testDef.unit;
+                document.getElementById('case-lab-min').value = testDef.min;
+                document.getElementById('case-lab-max').value = testDef.max;
+                document.getElementById('case-lab-cmin').value = testDef.cMin;
+                document.getElementById('case-lab-cmax').value = testDef.cMax;
+            }
+        }
+
+        function saveNewGlobalLabTest() {
+            let cat = document.getElementById('new-lab-cat').value;
+            const name = document.getElementById('new-lab-name').value.trim();
+            const unit = document.getElementById('new-lab-unit').value.trim();
+            const min = document.getElementById('new-lab-min').value;
+            const max = document.getElementById('new-lab-max').value;
+            const cmin = document.getElementById('new-lab-cmin').value;
+            const cmax = document.getElementById('new-lab-cmax').value;
+
+            if(!cat || !name || min === "" || max === "" || cmin === "" || cmax === "") return alert("Lütfen tüm zorunlu alanları doldurun.");
+
+            if(cat === 'Diğer') {
+                const customCat = document.getElementById('new-lab-cat-custom').value.trim();
+                if(!customCat) return alert("Yeni kategori adını yazın.");
+                cat = customCat;
+                if(!globalLabCats.includes(cat)) { globalLabCats.push(cat); localStorage.setItem('nurseSim_lab_cats', JSON.stringify(globalLabCats)); }
+            }
+
+            const newTest = {
+                category: cat, id: 'l_cust_' + Date.now(), name, unit,
+                min: parseFloat(min), max: parseFloat(max), cMin: parseFloat(cmin), cMax: parseFloat(cmax)
+            };
+
+            globalLabTests.push(newTest);
+            localStorage.setItem('nurseSim_lab_tests', JSON.stringify(globalLabTests));
+            
+            initLabCategorySelects();
+            document.getElementById('lab-form-panel').style.display = 'none';
+            alert("Yeni Test Kütüphaneye Eklendi!");
+        }
+
         function addCaseLab() {
-            const cat = document.getElementById('lab-category').value;
             const testId = document.getElementById('lab-test').value;
             const valStr = document.getElementById('lab-value').value;
-            if(!cat || !testId || valStr === "") return alert("Lütfen kategori, test ve değer girin.");
+            const minStr = document.getElementById('case-lab-min').value;
+            const maxStr = document.getElementById('case-lab-max').value;
+            const cminStr = document.getElementById('case-lab-cmin').value;
+            const cmaxStr = document.getElementById('case-lab-cmax').value;
+
+            if(!testId || valStr === "" || minStr === "" || maxStr === "" || cminStr === "" || cmaxStr === "") {
+                return alert("Lütfen tüm değerlerin (Referans ve Sonuç) girildiğinden emin olun.");
+            }
             
+            const testDef = globalLabTests.find(t => t.id === testId);
             const val = parseFloat(valStr);
-            const testDef = labDB[cat].find(t => t.id === testId);
+            const cMin = parseFloat(cminStr);
+            const cMax = parseFloat(cmaxStr);
+            const min = parseFloat(minStr);
+            const max = parseFloat(maxStr);
             
             let status = "normal"; let isPanic = false;
-            if (val <= testDef.cMin) { status = "panic-low"; isPanic = true; }
-            else if (val >= testDef.cMax) { status = "panic-high"; isPanic = true; }
-            else if (val < testDef.min) { status = "low"; }
-            else if (val > testDef.max) { status = "high"; }
+            if (val <= cMin) { status = "panic-low"; isPanic = true; }
+            else if (val >= cMax) { status = "panic-high"; isPanic = true; }
+            else if (val < min) { status = "low"; }
+            else if (val > max) { status = "high"; }
 
-            const labRecord = { id: 'clab_' + Date.now(), testId: testDef.id, name: testDef.name, unit: testDef.unit, val: val, min: testDef.min, max: testDef.max, status: status };
+            const labRecord = { id: 'clab_' + Date.now(), testId: testDef.id, name: testDef.name, unit: testDef.unit, val: val, min: min, max: max, status: status };
             currentCase.labs.push(labRecord);
             document.getElementById('lab-value').value = '';
             renderCaseLabs();
             
+            // --- GÖZLEM DEFTERİNE (NURSING NOTES) YAZDIRMA ---
+            let notesEl = document.getElementById('nursing-notes');
+            let timestamp = new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+            let statusText = status === 'normal' ? 'Normal' : status === 'low' ? 'DÜŞÜK (↓)' : status === 'high' ? 'YÜKSEK (↑)' : status === 'panic-low' ? 'KRİTİK DÜŞÜK (↓↓)' : 'KRİTİK YÜKSEK (↑↑)';
+            
+            let newNote = `\n[${timestamp} - LAB] ${testDef.name}: ${val} ${testDef.unit} (${statusText}) | Ref: ${min}-${max}`;
+            notesEl.value = (notesEl.value + newNote).trim();
+            // --------------------------------------------------
+
             if(isPanic) triggerPanicProtocol(labRecord);
         }
 
         function triggerPanicProtocol(lab) {
             alert(`⚠️ PANİC UYARISI: ${lab.name} = ${lab.val} ${lab.unit}\n\nBu değer yaşamı tehdit edici sınırlardadır! Bakım planına acil görev eklendi.`);
-            
-            // Bakım planına otomatik olarak Panic bloğu aç
             const diagName = `⚠️ KRİTİK LAB: ${lab.name} Bozukluğu`;
             let existingPlan = currentCase.carePlans.find(p => p.diagnosis === diagName);
-            
             if(!existingPlan) {
                 existingPlan = { id: 'cp_' + Date.now(), diagnosis: diagName, interventions: [], isPanic: true };
-                currentCase.carePlans.unshift(existingPlan); // En üste ekle
+                currentCase.carePlans.unshift(existingPlan); 
             }
-            
             let actionText = `ACİL: ${lab.name} değeri ${lab.val} (Kritik). Hekime bildirildi, yeni istemler uygulanıyor, vital takibi sıklaştırıldı.`;
             existingPlan.interventions.push({ id: 'int_' + Date.now(), text: actionText, done: false });
-            
             renderCarePlans();
         }
 
@@ -620,7 +706,6 @@
             if(!currentCase.labs || currentCase.labs.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:gray;">Henüz lab bulgusu eklenmedi.</td></tr>'; return;
             }
-            
             currentCase.labs.forEach(lab => {
                 let colorClass = "lab-normal"; let icon = "✔"; let trClass = "";
                 if(lab.status === "low") { colorClass = "lab-low"; icon = "↓"; }
@@ -639,41 +724,23 @@
         }
 
         // === 5. YENİ YAPISAL BAKIM PLANI (TANI -> GİRİŞİM) ===
-        function addCarePlanDiagnosis() {
-            const input = document.getElementById('case-nanda-input'); const val = input.value.trim();
-            if(!val) return; currentCase.carePlans.push({ id: 'cp_' + Date.now(), diagnosis: val, interventions: [] }); input.value = ''; renderCarePlans();
-        }
+        function addCarePlanDiagnosis() { const input = document.getElementById('case-nanda-input'); const val = input.value.trim(); if(!val) return; currentCase.carePlans.push({ id: 'cp_' + Date.now(), diagnosis: val, interventions: [] }); input.value = ''; renderCarePlans(); }
         function deleteCarePlan(planId) { currentCase.carePlans = currentCase.carePlans.filter(p => p.id !== planId); renderCarePlans(); }
-        
-        function addInterventionToDiagnosis(planId) {
-            let input = document.getElementById(`int-input-${planId}`); let val = input.value.trim(); if(!val) return;
-            let plan = currentCase.carePlans.find(p => p.id === planId);
-            if(plan) { plan.interventions.push({ id: 'int_' + Date.now(), text: val, done: false }); input.value = ''; renderCarePlans(); }
-        }
+        function addInterventionToDiagnosis(planId) { let input = document.getElementById(`int-input-${planId}`); let val = input.value.trim(); if(!val) return; let plan = currentCase.carePlans.find(p => p.id === planId); if(plan) { plan.interventions.push({ id: 'int_' + Date.now(), text: val, done: false }); input.value = ''; renderCarePlans(); } }
         function toggleIntervention(planId, intId) { let plan = currentCase.carePlans.find(p => p.id === planId); if(plan) { let int = plan.interventions.find(i => i.id === intId); if(int) int.done = !int.done; } renderCarePlans(); }
         function deleteIntervention(planId, intId) { let plan = currentCase.carePlans.find(p => p.id === planId); if(plan) plan.interventions = plan.interventions.filter(i => i.id !== intId); renderCarePlans(); }
 
         function renderCarePlans() {
             const container = document.getElementById('care-plans-container'); container.innerHTML = '';
             if(!currentCase.carePlans || currentCase.carePlans.length === 0) { container.innerHTML = '<div style="color:gray; font-size:0.9rem; text-align:center;">Önce yukarıdan bir tanı ekleyin.</div>'; return; }
-            
             currentCase.carePlans.forEach(plan => {
                 let card = document.createElement('div'); card.className = 'care-plan-card';
                 let headerClass = plan.isPanic || plan.diagnosis.includes("KRİTİK") ? 'care-plan-header panic' : 'care-plan-header';
-                
                 const pending = plan.interventions.filter(i => !i.done); const completed = plan.interventions.filter(i => i.done);
                 let interventionsHTML = '';
                 pending.forEach(i => { interventionsHTML += `<li class="intervention"><input type="checkbox" onchange="toggleIntervention('${plan.id}', '${i.id}')" style="cursor:pointer; width:18px; height:18px;"><span>${i.text}</span><button class="delete-btn" onclick="deleteIntervention('${plan.id}', '${i.id}')">&times;</button></li>`; });
                 completed.forEach(i => { interventionsHTML += `<li class="intervention done"><input type="checkbox" checked onchange="toggleIntervention('${plan.id}', '${i.id}')" style="cursor:pointer; width:18px; height:18px;"><span style="text-decoration:line-through; color:gray;">${i.text}</span><span class="badge-done">✓ Yapıldı</span><button class="delete-btn" onclick="deleteIntervention('${plan.id}', '${i.id}')">&times;</button></li>`; });
-                
-                card.innerHTML = `
-                    <div class="${headerClass}">
-                        <h4>📋 ${plan.diagnosis}</h4><button class="delete-btn" onclick="deleteCarePlan('${plan.id}')" style="font-size:1.5rem;">&times;</button>
-                    </div>
-                    <div class="care-plan-body">
-                        <ul class="item-list" style="margin-bottom:10px;">${interventionsHTML}</ul>
-                        <div class="input-row" style="margin-bottom:0;"><input type="text" id="int-input-${plan.id}" placeholder="Bu tanıya özel girişim ekle..." onkeypress="if(event.key==='Enter') addInterventionToDiagnosis('${plan.id}')"><button class="btn-add" onclick="addInterventionToDiagnosis('${plan.id}')">Girişim Ekle</button></div>
-                    </div>`;
+                card.innerHTML = `<div class="${headerClass}"><h4>📋 ${plan.diagnosis}</h4><button class="delete-btn" onclick="deleteCarePlan('${plan.id}')" style="font-size:1.5rem;">&times;</button></div><div class="care-plan-body"><ul class="item-list" style="margin-bottom:10px;">${interventionsHTML}</ul><div class="input-row" style="margin-bottom:0;"><input type="text" id="int-input-${plan.id}" placeholder="Bu tanıya özel girişim ekle..." onkeypress="if(event.key==='Enter') addInterventionToDiagnosis('${plan.id}')"><button class="btn-add" onclick="addInterventionToDiagnosis('${plan.id}')">Girişim Ekle</button></div></div>`;
                 container.appendChild(card);
             });
         }
@@ -682,10 +749,7 @@
         function renderGlobalNandaDict() {
             const dataList = document.getElementById('nanda-suggestions'); dataList.innerHTML = '';
             const listEl = document.getElementById('global-nanda-list'); listEl.innerHTML = '';
-            globalNandaDict.forEach((d, idx) => {
-                let opt = document.createElement('option'); opt.value = d; dataList.appendChild(opt);
-                listEl.innerHTML += `<li class="nanda-global-item">${d} <button class="delete-btn" onclick="removeGlobalNanda(${idx})">&times;</button></li>`;
-            });
+            globalNandaDict.forEach((d, idx) => { let opt = document.createElement('option'); opt.value = d; dataList.appendChild(opt); listEl.innerHTML += `<li class="nanda-global-item">${d} <button class="delete-btn" onclick="removeGlobalNanda(${idx})">&times;</button></li>`; });
         }
         function addGlobalNanda() { const val = document.getElementById('global-nanda-input').value.trim(); if(!val) return; if(!globalNandaDict.includes(val)) { globalNandaDict.push(val); localStorage.setItem('nurseSim_nanda_dict', JSON.stringify(globalNandaDict)); renderGlobalNandaDict(); } document.getElementById('global-nanda-input').value = ''; }
         function removeGlobalNanda(idx) { globalNandaDict.splice(idx, 1); localStorage.setItem('nurseSim_nanda_dict', JSON.stringify(globalNandaDict)); renderGlobalNandaDict(); }
