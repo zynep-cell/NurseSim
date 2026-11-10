@@ -320,8 +320,17 @@
                         <div class="input-row">
                             <input type="text" id="df-name" placeholder="Ticari Adı (Örn: Parol)">
                             <input type="text" id="df-active" placeholder="Etken Madde (Örn: Parasetamol)">
-                            <select id="df-category"><option value="Analjezik">Analjezik</option><option value="Antibiyotik">Antibiyotik</option><option value="Kardiyovasküler">Kardiyovasküler</option><option value="Diğer">Diğer</option></select>
+                            <!-- KATEGORİ SEÇİMİ VE DİNAMİK YENİ KATEGORİ -->
+                            <select id="df-category" onchange="toggleCustomCategory()">
+                                <!-- JS ile dinamik dolacak -->
+                            </select>
                         </div>
+                        
+                        <!-- DİĞER SEÇİLİRSE AÇILACAK GİZLİ KUTU -->
+                        <div class="input-row" id="custom-cat-row" style="display:none; margin-bottom:10px;">
+                            <input type="text" id="df-custom-category" placeholder="Yeni İlaç Grubunu Yazın (Örn: Antidepresan)">
+                        </div>
+
                         <label>Endikasyonlar</label>
                         <div class="input-row" style="margin-bottom: 5px;">
                             <input type="text" id="df-ind-input" placeholder="Yazıp ekle">
@@ -336,7 +345,7 @@
                         </div>
                         <div id="df-side-tags" class="tag-container"></div>
 
-                        <!-- ETKİLEŞİMLER (GERİ GELDİ) -->
+                        <!-- ETKİLEŞİMLER -->
                         <label>Riskli Etkileşimler / Dikkat Edilecekler</label>
                         <div class="input-row" style="margin-bottom: 5px;">
                             <input type="text" id="df-inter-name" placeholder="Madde/Durum (Örn: Alkol, Gebelik)">
@@ -377,7 +386,7 @@
     </div>
 
     <script>
-        // === 1. SİMÜLASYON VERİTABANI ===
+        // === 1. SİMÜLASYON VERİTABANI (BELİRTİLER TAMAMEN AYRIŞTIRILDI) ===
         const symptomsDB = {
             "Respiratuar": [
                 { id: "s1", name: "Dispne", part: "part-chest", animClass: "anim-fast-breath", quote: "Nefes alamıyorum!" },
@@ -387,7 +396,8 @@
             "Kardiyovasküler": [
                 { id: "s4", name: "Göğüs Ağrısı", part: "part-heart", animClass: "anim-pulse-red", quote: "Göğsümde ezici bir ağrı var!" },
                 { id: "s5", name: "Çarpıntı", part: "part-heart", animClass: "anim-fast-flash", quote: "Kalbim yerinden çıkacak gibi çarpıyor!" },
-                { id: "s6", name: "Solukluk/Soğuk Terleme", part: "part-head", animClass: "anim-pale", quote: "Kendimi çok halsiz hissediyorum." },
+                { id: "s6", name: "Solukluk", part: "part-head", animClass: "anim-pale", quote: "Kendimi çok halsiz hissediyorum." },
+                { id: "s20", name: "Soğuk Terleme", part: "part-head", animClass: "anim-pale", quote: "Soğuk soğuk terliyorum." },
                 { id: "s7", name: "Periferik Ödem", part: "part-legs-l", animClass: "anim-swell", quote: "Bacaklarım şiş ve gergin." }
             ],
             "Nörolojik": [
@@ -397,14 +407,17 @@
                 { id: "s18", name: "Parestezi", part: "part-arms-l", animClass: "anim-shake", quote: "Kollarımda karıncalanma var." }
             ],
             "Gastrointestinal / Metabolik": [
-                { id: "s11", name: "Bulantı/Kusma", part: "part-stomach", animClass: "anim-wave-green", quote: "Midem çok bulanıyor..." },
+                { id: "s11", name: "Bulantı", part: "part-stomach", animClass: "anim-wave-green", quote: "Midem çok bulanıyor..." },
+                { id: "s21", name: "Kusma", part: "part-stomach", animClass: "anim-wave-green", quote: "Çıkaracak gibiyim, midemi tutamıyorum!" },
                 { id: "s12", name: "Akut Karın Ağrısı", part: "part-stomach", animClass: "anim-sharp-red", quote: "Karnıma bıçak saplanıyor sanki!" },
                 { id: "s13", name: "Yüksek Ateş", part: "body-wrapper", animClass: "anim-fever", quote: "Yanıyorum, çok sıcak!" },
                 { id: "s19", name: "Titreme", part: "body-wrapper", animClass: "anim-shake", quote: "Çok üşüyorum..." }
             ],
             "Ürolojik / Sistemik": [
-                { id: "s16", name: "Anüri / Oligüri", part: "part-stomach", animClass: "anim-swell", quote: "Sabahtan beri hiç idrara çıkamadım." },
-                { id: "s17", name: "Melena/Hematemez", part: "part-stomach", animClass: "anim-sharp-red", quote: "Dışkım simsiyah ve katran gibi." }
+                { id: "s16", name: "Anüri", part: "part-stomach", animClass: "anim-swell", quote: "Sabahtan beri hiç idrara çıkamadım." },
+                { id: "s22", name: "Oligüri", part: "part-stomach", animClass: "anim-swell", quote: "Çok az idrara çıkabiliyorum." },
+                { id: "s17", name: "Melena", part: "part-stomach", animClass: "anim-sharp-red", quote: "Dışkım simsiyah ve katran gibi." },
+                { id: "s23", name: "Hematemez", part: "part-stomach", animClass: "anim-sharp-red", quote: "Ağzımdan kan geldi!" }
             ],
             "Glukoz Parametreleri": [
                 { id: "s14", name: "Hipoglisemi", part: "body-wrapper", animClass: "anim-shake", quote: "İçim çekiliyor, titriyorum!" },
@@ -418,6 +431,7 @@
         let currentCase = getEmptyCase();
         let globalNandaDict = [];
         let globalDrugs = [];
+        let globalDrugCats = ["Analjezik", "Antiinflamatuar", "Antibiyotik", "Kardiyovasküler", "Gastrointestinal", "Solunum Sistemi"];
         let globalFlowcharts = [];
         let currentFlowchart = { id: null, name: "", nodes: [], links: [] };
         
@@ -434,7 +448,7 @@
             return { 
                 id: null, name: "", notes: "", diagnosis: "", 
                 activeSymptoms: [], customSymptoms: [], 
-                carePlans: [] // Array of { id, diagnosis, interventions: [] }
+                carePlans: [] 
             };
         }
 
@@ -443,9 +457,11 @@
             renderSymptoms();
             globalNandaDict = JSON.parse(localStorage.getItem('nurseSim_nanda_dict')) || defaultNanda;
             globalDrugs = JSON.parse(localStorage.getItem('nurseSim_drugs')) || [];
+            globalDrugCats = JSON.parse(localStorage.getItem('nurseSim_drug_cats')) || globalDrugCats;
             globalFlowcharts = JSON.parse(localStorage.getItem('nurseSim_flowcharts')) || [];
             
             renderGlobalNandaDict();
+            renderDrugCategories();
             renderDrugList();
             updateFlowchartSelect();
             loadLibrary();
@@ -729,7 +745,20 @@
             const flow = globalFlowcharts.find(f => f.id === id); if(flow) { currentFlowchart = JSON.parse(JSON.stringify(flow)); document.getElementById('flow-name').value = currentFlowchart.name; drawFlowchartDOM(); }
         }
 
-        // === 8. GENEL İLAÇ DEFTERİ & ETKİLEŞİMLER ===
+        // === 8. GENEL İLAÇ DEFTERİ & DİNAMİK KATEGORİ ===
+        function renderDrugCategories() {
+            const sel = document.getElementById('df-category'); sel.innerHTML = '';
+            globalDrugCats.forEach(c => {
+                let opt = document.createElement('option'); opt.value = c; opt.innerText = c; sel.appendChild(opt);
+            });
+            sel.innerHTML += '<option value="Diğer">Diğer (Belirtiniz)...</option>';
+        }
+
+        function toggleCustomCategory() {
+            const val = document.getElementById('df-category').value;
+            document.getElementById('custom-cat-row').style.display = (val === 'Diğer') ? 'flex' : 'none';
+        }
+
         function addDrugTag(type) { const input = document.getElementById(type === 'indications' ? 'df-ind-input' : 'df-side-input'); const val = input.value.trim(); if(!val) return; tempDrugForm[type].push(val); input.value = ''; renderDrugTags(type); }
         function renderDrugTags(type) { const container = document.getElementById(type === 'indications' ? 'df-ind-tags' : 'df-side-tags'); container.innerHTML = ''; tempDrugForm[type].forEach((tag, idx) => { container.innerHTML += `<div class="tag-chip">${tag} <span onclick="tempDrugForm['${type}'].splice(${idx},1); renderDrugTags('${type}')">&times;</span></div>`; }); }
         
@@ -747,13 +776,32 @@
         }
 
         function saveNewDrug() {
-            const name = document.getElementById('df-name').value.trim(); const active = document.getElementById('df-active').value.trim(); if(!name || !active) return alert("İlaç Adı ve Etken Madde zorunludur!");
-            globalDrugs.push({ id: 'drug_' + Date.now(), name, active, category: document.getElementById('df-category').value, indications: [...tempDrugForm.indications], sideEffects: [...tempDrugForm.sideEffects], interactions: [...tempDrugForm.interactions] });
+            const name = document.getElementById('df-name').value.trim(); const active = document.getElementById('df-active').value.trim(); 
+            let cat = document.getElementById('df-category').value;
+            
+            if(!name || !active) return alert("İlaç Adı ve Etken Madde zorunludur!");
+            
+            if(cat === 'Diğer') {
+                const customCat = document.getElementById('df-custom-category').value.trim();
+                if(!customCat) return alert("Lütfen yeni ilaç grubunu (kategorisini) yazın.");
+                cat = customCat;
+                if(!globalDrugCats.includes(cat)) {
+                    globalDrugCats.push(cat);
+                    localStorage.setItem('nurseSim_drug_cats', JSON.stringify(globalDrugCats));
+                    renderDrugCategories();
+                }
+            }
+
+            globalDrugs.push({ id: 'drug_' + Date.now(), name, active, category: cat, indications: [...tempDrugForm.indications], sideEffects: [...tempDrugForm.sideEffects], interactions: [...tempDrugForm.interactions] });
             localStorage.setItem('nurseSim_drugs', JSON.stringify(globalDrugs)); 
-            document.getElementById('df-name').value = ''; document.getElementById('df-active').value = ''; 
-            tempDrugForm = { indications: [], sideEffects: [], interactions: [] }; renderDrugTags('indications'); renderDrugTags('sideEffects'); renderInteractions();
+            
+            document.getElementById('df-name').value = ''; document.getElementById('df-active').value = ''; document.getElementById('df-custom-category').value = '';
+            document.getElementById('custom-cat-row').style.display = 'none';
+            tempDrugForm = { indications: [], sideEffects: [], interactions: [] }; 
+            renderDrugTags('indications'); renderDrugTags('sideEffects'); renderInteractions();
             document.getElementById('drug-form-panel').style.display = 'none'; alert("İlaç Eklendi!"); renderDrugList();
         }
+
         function filterDrugs() { renderDrugList(document.getElementById('drug-search').value.toLowerCase()); }
         function renderDrugList(query = "") {
             const container = document.getElementById('drug-list-container'); container.innerHTML = '';
