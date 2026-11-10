@@ -10,7 +10,7 @@
             --primary: #00796b; --primary-light: #48a999; --primary-dark: #004c40;
             --bg: #f0f4f4; --surface: #ffffff; --text-dark: #333333; --text-light: #757575;
             --border: #e0e0e0; --accent: #ff5252; --warning: #ffb300; --success: #4caf50;
-            --global-tab: #3949ab;
+            --global-tab: #3949ab; --lab-low: #1976d2; --lab-high: #d32f2f;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -30,8 +30,6 @@
         /* === ANA DÜZEN === */
         .main-container { display: flex; flex: 1; overflow: hidden; position: relative; }
         .left-col { flex: 0.6; padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; overflow-y: auto; border-right: 2px solid var(--border); background-color: #fafcfc; }
-        
-        /* SAĞ SÜTUN DİKEY SEKME DÜZENİ */
         .right-col { flex: 1; display: flex; flex-direction: row; background: var(--surface); overflow: hidden; }
         .tabs-sidebar { width: 200px; background: #f4f6f8; border-right: 1px solid var(--border); display: flex; flex-direction: column; padding-top: 1rem; overflow-y: auto; }
         .tabs-content-area { flex: 1; display: flex; flex-direction: column; padding: 1.5rem; overflow-y: auto; position: relative; background: var(--surface); }
@@ -49,7 +47,6 @@
         .body-part { fill: #e0e0e0; stroke: #b0bec5; stroke-width: 2; transition: fill 0.3s; }
         .heart-part { fill: transparent; stroke: none; }
 
-        /* Konuşma Balonu & Animasyonlar */
         .speech-bubble { position: absolute; top: 5%; right: 5%; background: white; padding: 12px; border-radius: 12px; border: 2px solid var(--primary-light); box-shadow: 0 4px 15px rgba(0,121,107,0.2); max-width: 150px; font-size: 0.85rem; font-weight: bold; color: var(--primary-dark); opacity: 0; transform: translateY(10px); transition: all 0.3s ease; pointer-events: none; z-index: 5; }
         .speech-bubble.show { opacity: 1; transform: translateY(0); }
         
@@ -92,14 +89,26 @@
         .item-list li.intervention.done { background: #f1f8e9; border-left-color: var(--success); opacity: 0.8; }
         .item-list li.nanda-global-item { border-left-color: var(--global-tab); }
         .item-list li.intervention span { flex: 1; font-size: 0.9rem;}
-        .delete-btn { background: none; border: none; color: var(--accent); cursor: pointer; font-weight: bold; font-size: 1.2rem; }
+        .delete-btn { background: none; border: none; color: var(--text-light); cursor: pointer; font-weight: bold; font-size: 1.2rem; transition: 0.2s; }
+        .delete-btn:hover { color: var(--accent); }
         .badge-done { background: var(--success); color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; margin-left: auto; }
 
-        /* Yeni Bakım Planı Kart Tasarımı */
         .care-plan-card { background: white; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
         .care-plan-header { background: #e0f2f1; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
+        .care-plan-header.panic { background: #ffebee; border-bottom-color: #ffcdd2; }
+        .care-plan-header.panic h4 { color: var(--lab-high); }
         .care-plan-header h4 { margin: 0; color: var(--primary-dark); font-size: 0.95rem; }
         .care-plan-body { padding: 10px 15px; background: #fafcfc; }
+
+        /* === LAB MODÜLÜ TASARIMI === */
+        .lab-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem; }
+        .lab-table th { background: var(--bg); padding: 8px; text-align: left; border-bottom: 2px solid var(--border); color: var(--text-dark); }
+        .lab-table td { padding: 10px 8px; border-bottom: 1px solid var(--border); }
+        .lab-normal { color: var(--success); font-weight: bold; }
+        .lab-low { color: var(--lab-low); font-weight: bold; }
+        .lab-high { color: var(--lab-high); font-weight: bold; }
+        .lab-panic { background: #ffebee; animation: blink-bg 1s infinite alternate; }
+        @keyframes blink-bg { from { background: #fff; } to { background: #ffcdd2; } }
 
         /* === 2D AKIŞ ŞEMASI (GENEL KÜTÜPHANE) === */
         .info-box { background: #e3f2fd; border-left: 4px solid #1976d2; padding: 10px 15px; border-radius: 4px; margin-bottom: 15px; font-size: 0.85rem; color: #0d47a1; }
@@ -143,12 +152,12 @@
         .interaction-alert.medium { background: #fff8e1; border-left-color: var(--warning); }
         #drug-form-panel { background: #f9f9f9; padding: 15px; border: 1px solid var(--border); border-radius: 8px; display: none; margin-bottom: 10px; }
 
-        /* Kaydetme Butonu (Sadece Vaka İçin, Alta Sabit) */
+        /* Kaydetme Butonu */
         .save-section { margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--border); }
         .btn-save { width: 100%; background: var(--primary-dark); color: white; border: none; padding: 1rem; border-radius: 8px; font-size: 1rem; cursor: pointer; font-weight: bold; transition: background 0.3s; }
         .btn-save:hover { background: #00332a; }
 
-        /* KÜTÜPHANE PANELİ (Vakalar) */
+        /* KÜTÜPHANE PANELİ */
         .library-panel { position: absolute; top: 0; right: -400px; width: 350px; height: 100%; background: white; box-shadow: -5px 0 15px rgba(0,0,0,0.1); transition: right 0.3s ease; z-index: 20; display: flex; flex-direction: column; }
         .library-panel.open { right: 0; }
         .library-header { background: var(--primary); color: white; padding: 1rem; display: flex; justify-content: space-between; align-items: center; }
@@ -196,7 +205,6 @@
                 </div>
             </div>
 
-            <!-- BELİRTİ LİSTESİ -->
             <div class="symptoms-wrapper" id="symptoms-container"></div>
             
             <div class="custom-adder">
@@ -209,10 +217,11 @@
 
         <!-- SAĞ SÜTUN (DİKEY SEKMELER VE İÇERİK) -->
         <div class="right-col">
-            <!-- Sol Menü (Sidebar) -->
+            <!-- Sidebar -->
             <div class="tabs-sidebar">
                 <div class="tab-category-label">VAKAYA ÖZEL</div>
                 <button class="tab vaka-tab active" data-target="tab-status" onclick="switchTab(this, 'vaka')">📝 Gözlem & Tanı</button>
+                <button class="tab vaka-tab" data-target="tab-lab" onclick="switchTab(this, 'vaka')">🧪 Lab Bulguları</button>
                 <button class="tab vaka-tab" data-target="tab-care" onclick="switchTab(this, 'vaka')">📋 Bakım Planı</button>
                 
                 <div class="tab-category-label" style="margin-top: 20px;">GENEL SÖZLÜKLER</div>
@@ -221,7 +230,7 @@
                 <button class="tab genel-tab" data-target="tab-drugs" onclick="switchTab(this, 'genel')">💊 İlaç Defteri</button>
             </div>
 
-            <!-- Sağ İçerik Alanı -->
+            <!-- İçerik Alanı -->
             <div class="tabs-content-area">
                 
                 <!-- SEKME 1: Vaka Gözlem & Tanı -->
@@ -236,7 +245,35 @@
                     </div>
                 </div>
 
-                <!-- SEKME 2: Vaka Bakım Planı (TANI -> GİRİŞİM) -->
+                <!-- SEKME YENİ: Lab Bulguları -->
+                <div class="tab-content" id="tab-lab">
+                    <div class="info-box" style="border-left-color:var(--primary); color:var(--primary-dark); background:#e0f2f1;">
+                        <strong>🔬 Klinik Laboratuvar:</strong> Test değerlerini girin. NCLEX/Merck standartlarına göre otomatik değerlendirilecek ve Kritik (Panic) değerlerde Bakım Planına acil görev eklenecektir.
+                    </div>
+                    
+                    <div class="input-row" style="background:#f4f6f8; padding:15px; border-radius:8px; border:1px solid var(--border);">
+                        <select id="lab-category" onchange="renderLabSelects()"></select>
+                        <select id="lab-test"></select>
+                        <input type="number" step="0.1" id="lab-value" placeholder="Değer girin">
+                        <button class="btn-add" onclick="addCaseLab()">Ekle</button>
+                    </div>
+
+                    <table class="lab-table">
+                        <thead>
+                            <tr>
+                                <th>Test Adı</th>
+                                <th>Sonuç</th>
+                                <th>Referans (Min-Max)</th>
+                                <th>İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody id="case-labs-tbody">
+                            <!-- Dinamik Lab Değerleri -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- SEKME 2: Vaka Bakım Planı -->
                 <div class="tab-content" id="tab-care">
                     <label>Vakaya Yeni Bakım Planı (Tanı) Ekle</label>
                     <div class="input-row">
@@ -244,19 +281,15 @@
                         <datalist id="nanda-suggestions"></datalist>
                         <button class="btn-add" onclick="addCarePlanDiagnosis()">Tanı Ekle</button>
                     </div>
-                    
                     <hr style="border:0; border-top:1px solid var(--border); margin:10px 0;">
-                    
                     <div id="care-plans-container" style="display:flex; flex-direction:column; margin-top:10px;">
-                        <div style="color:gray; font-size:0.9rem; text-align:center;">Önce yukarıdan bir tanı ekleyin.</div>
+                        <div style="color:gray; font-size:0.9rem; text-align:center;">Önce yukarıdan bir tanı ekleyin veya kritik bir lab değeri girin.</div>
                     </div>
                 </div>
 
                 <!-- SEKME 3: Genel NANDA Sözlüğü -->
                 <div class="tab-content" id="tab-nanda-dict">
-                    <div class="info-box">
-                        <strong>ℹ️ NANDA Sözlüğü:</strong> Burası senin genel kütüphanendir. Buraya eklediğin tanılar, "Bakım Planı" sekmesinde arama listesine otomatik çıkar.
-                    </div>
+                    <div class="info-box"><strong>ℹ️ NANDA Sözlüğü:</strong> Burası senin genel kütüphanendir.</div>
                     <label>Sözlüğe Yeni Tanı Ekle</label>
                     <div class="input-row">
                         <input type="text" id="global-nanda-input" placeholder="Örn: Sıvı volüm eksikliği">
@@ -270,39 +303,21 @@
                 <div class="tab-content" id="tab-flow">
                     <div class="info-box">
                         <strong>ℹ️ Akış Şeması Nasıl Kullanılır?</strong><br>
-                        1. Araç çubuğundan şekil seçip <b>"+ Kutu Ekle"</b>ye basın. Kutuyu istediğiniz yere sürükleyin.<br>
-                        2. Kutuları birbirine bağlamak için <b>"🔗 Bağlantı Modu"</b>nu açın. Önce <b>başlangıç</b> kutusuna, sonra <b>hedef</b> kutuya tıklayın.<br>
-                        3. Çizdiğiniz şemayı alttaki kısımdan kaydedip, kütüphanenizden istediğiniz zaman çağırabilirsiniz.
+                        1. Araç çubuğundan şekil seçip <b>"+ Kutu Ekle"</b>ye basın. Kutuyu sürükleyin.<br>
+                        2. Kutuları bağlamak için <b>"🔗 Bağlantı Modu"</b>nu açın. Önce <b>başlangıç</b>, sonra <b>hedef</b> kutuya tıklayın.
                     </div>
-
                     <div class="flow-toolbar">
-                        <select id="flow-shape">
-                            <option value="shape-rect">Dikdörtgen (İşlem)</option>
-                            <option value="shape-ellipse">Elips (Durum)</option>
-                            <option value="shape-rhombus">Eşkenar Dörtgen (Soru)</option>
-                            <option value="shape-parallelogram">Paralelkenar (Veri)</option>
-                        </select>
-                        <select id="flow-color">
-                            <option value="#3949ab">Lacivert</option>
-                            <option value="#00796b">Teal (Yeşilimsi)</option>
-                            <option value="#d32f2f">Kırmızı</option>
-                            <option value="#f57c00">Turuncu</option>
-                        </select>
+                        <select id="flow-shape"><option value="shape-rect">Dikdörtgen (İşlem)</option><option value="shape-ellipse">Elips (Durum)</option><option value="shape-rhombus">Eşkenar Dörtgen (Soru)</option><option value="shape-parallelogram">Paralelkenar (Veri)</option></select>
+                        <select id="flow-color"><option value="#3949ab">Lacivert</option><option value="#00796b">Teal (Yeşilimsi)</option><option value="#d32f2f">Kırmızı</option><option value="#f57c00">Turuncu</option></select>
                         <button class="btn-add btn-add-global" onclick="addFlowNodeUI()">+ Kutu Ekle</button>
                         <span style="border-left: 1px solid var(--border); height: 20px; margin: 0 5px;"></span>
                         <button id="link-mode-btn" class="link-mode-btn" onclick="toggleLinkMode()">🔗 Bağlantı Modu: KAPALI</button>
                     </div>
-                    
-                    <div class="flow-canvas" id="flow-canvas">
-                        <svg id="flow-svg-layer"><defs><marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#333" /></marker></defs><g id="lines-container"></g></svg>
-                    </div>
-
+                    <div class="flow-canvas" id="flow-canvas"><svg id="flow-svg-layer"><defs><marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#333" /></marker></defs><g id="lines-container"></g></svg></div>
                     <div class="flow-save-bar">
                         <input type="text" id="flow-name" placeholder="Şema Adı" style="flex:1; padding:0.6rem; border-radius:4px; border:1px solid var(--border);">
                         <button class="btn-add btn-add-global" onclick="saveGlobalFlowchart()">💾 Kaydet</button>
-                        <select id="saved-flows-select" style="padding:0.6rem; border-radius:4px; border:1px solid var(--border);" onchange="loadSelectedFlowchart()">
-                            <option value="">-- Kayıtlı Şemalarım --</option>
-                        </select>
+                        <select id="saved-flows-select" style="padding:0.6rem; border-radius:4px; border:1px solid var(--border);" onchange="loadSelectedFlowchart()"><option value="">-- Kayıtlı Şemalarım --</option></select>
                         <button class="btn-header" style="background:#e53935; color:white;" onclick="clearFlowchart()">Temizle</button>
                     </div>
                 </div>
@@ -313,50 +328,29 @@
                         <input type="text" id="drug-search" class="drug-search" placeholder="İlaç ara..." onkeyup="filterDrugs()">
                         <button class="btn-add btn-add-global" onclick="document.getElementById('drug-form-panel').style.display = 'block'">+ Yeni İlaç</button>
                     </div>
-                    
-                    <!-- YENİ İLAÇ FORMU VE ETKİLEŞİMLER -->
                     <div id="drug-form-panel">
                         <h4 style="color:var(--global-tab); margin-bottom:10px;">Yeni İlaç / Prospektüs Tanımla</h4>
                         <div class="input-row">
                             <input type="text" id="df-name" placeholder="Ticari Adı (Örn: Parol)">
                             <input type="text" id="df-active" placeholder="Etken Madde (Örn: Parasetamol)">
-                            <!-- KATEGORİ SEÇİMİ VE DİNAMİK YENİ KATEGORİ -->
-                            <select id="df-category" onchange="toggleCustomCategory()">
-                                <!-- JS ile dinamik dolacak -->
-                            </select>
+                            <select id="df-category" onchange="toggleCustomCategory()"></select>
                         </div>
-                        
-                        <!-- DİĞER SEÇİLİRSE AÇILACAK GİZLİ KUTU -->
                         <div class="input-row" id="custom-cat-row" style="display:none; margin-bottom:10px;">
                             <input type="text" id="df-custom-category" placeholder="Yeni İlaç Grubunu Yazın (Örn: Antidepresan)">
                         </div>
-
                         <label>Endikasyonlar</label>
-                        <div class="input-row" style="margin-bottom: 5px;">
-                            <input type="text" id="df-ind-input" placeholder="Yazıp ekle">
-                            <button class="btn-add" onclick="addDrugTag('indications')">Ekle</button>
-                        </div>
+                        <div class="input-row" style="margin-bottom: 5px;"><input type="text" id="df-ind-input" placeholder="Yazıp ekle"><button class="btn-add" onclick="addDrugTag('indications')">Ekle</button></div>
                         <div id="df-ind-tags" class="tag-container"></div>
-                        
                         <label>Yan Etkiler</label>
-                        <div class="input-row" style="margin-bottom: 5px;">
-                            <input type="text" id="df-side-input" placeholder="Yazıp ekle">
-                            <button class="btn-add" onclick="addDrugTag('sideEffects')">Ekle</button>
-                        </div>
+                        <div class="input-row" style="margin-bottom: 5px;"><input type="text" id="df-side-input" placeholder="Yazıp ekle"><button class="btn-add" onclick="addDrugTag('sideEffects')">Ekle</button></div>
                         <div id="df-side-tags" class="tag-container"></div>
-
-                        <!-- ETKİLEŞİMLER -->
                         <label>Riskli Etkileşimler / Dikkat Edilecekler</label>
                         <div class="input-row" style="margin-bottom: 5px;">
                             <input type="text" id="df-inter-name" placeholder="Madde/Durum (Örn: Alkol, Gebelik)">
-                            <select id="df-inter-risk">
-                                <option value="Yüksek">Yüksek Risk (Kırmızı)</option>
-                                <option value="Orta">Orta Risk (Sarı)</option>
-                            </select>
+                            <select id="df-inter-risk"><option value="Yüksek">Yüksek Risk (Kırmızı)</option><option value="Orta">Orta Risk (Sarı)</option></select>
                             <button class="btn-add" onclick="addDrugInteraction()">Uyarı Ekle</button>
                         </div>
                         <div id="df-inter-list" style="margin-bottom: 10px;"></div>
-
                         <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:15px;">
                             <button class="btn-header" style="background:#9e9e9e;" onclick="document.getElementById('drug-form-panel').style.display='none'">İptal</button>
                             <button class="btn-add btn-add-global" onclick="saveNewDrug()">Veritabanına Kaydet</button>
@@ -365,11 +359,9 @@
                     <div class="drug-list" id="drug-list-container"></div>
                 </div>
 
-                <!-- Kaydet Butonu (Sadece Vaka Sekmeleri Açıkken İçerik Alanının Altında Görünür) -->
+                <!-- Kaydet Butonu -->
                 <div class="save-section" id="case-save-section">
-                    <div class="input-row">
-                        <input type="text" id="case-name" placeholder="Vaka Adı (Örn: Acil KOAH Atağı)">
-                    </div>
+                    <div class="input-row"><input type="text" id="case-name" placeholder="Vaka Adı (Örn: Acil KOAH Atağı)"></div>
                     <button class="btn-save" onclick="saveCase()">💾 VAKAYI KÜTÜPHANEYE KAYDET</button>
                 </div>
             </div>
@@ -386,7 +378,7 @@
     </div>
 
     <script>
-        // === 1. SİMÜLASYON VERİTABANI (BELİRTİLER TAMAMEN AYRIŞTIRILDI) ===
+        // === 1. SİMÜLASYON VERİTABANI (BELİRTİLER) ===
         const symptomsDB = {
             "Respiratuar": [
                 { id: "s1", name: "Dispne", part: "part-chest", animClass: "anim-fast-breath", quote: "Nefes alamıyorum!" },
@@ -419,9 +411,32 @@
                 { id: "s17", name: "Melena", part: "part-stomach", animClass: "anim-sharp-red", quote: "Dışkım simsiyah ve katran gibi." },
                 { id: "s23", name: "Hematemez", part: "part-stomach", animClass: "anim-sharp-red", quote: "Ağzımdan kan geldi!" }
             ],
-            "Glukoz Parametreleri": [
+            "Glukoz": [
                 { id: "s14", name: "Hipoglisemi", part: "body-wrapper", animClass: "anim-shake", quote: "İçim çekiliyor, titriyorum!" },
                 { id: "s15", name: "Hiperglisemi", part: "part-head", animClass: "anim-dry", quote: "Ağzım kupkuru, çok susadım!" }
+            ]
+        };
+
+        // === LAB REFERANS VERİTABANI (NCLEX/Merck Standartları) ===
+        const labDB = {
+            "Hemogram (CBC)": [
+                { id: "l_hb", name: "Hemoglobin (Hb)", unit: "g/dL", min: 12.0, max: 16.0, cMin: 7.0, cMax: 20.0 },
+                { id: "l_wbc", name: "WBC (Lökosit)", unit: "10^3/uL", min: 4.5, max: 11.0, cMin: 2.0, cMax: 30.0 },
+                { id: "l_plt", name: "Platelet (PLT)", unit: "10^3/uL", min: 150, max: 400, cMin: 20, cMax: 1000 },
+                { id: "l_hct", name: "Hematokrit (Htc)", unit: "%", min: 36, max: 48, cMin: 21, cMax: 60 }
+            ],
+            "Biyokimya": [
+                { id: "l_na", name: "Sodyum (Na)", unit: "mEq/L", min: 135, max: 145, cMin: 120, cMax: 160 },
+                { id: "l_k", name: "Potasyum (K)", unit: "mEq/L", min: 3.5, max: 5.0, cMin: 2.5, cMax: 6.0 },
+                { id: "l_glu", name: "Glukoz (Açlık)", unit: "mg/dL", min: 70, max: 100, cMin: 40, cMax: 400 },
+                { id: "l_cre", name: "Kreatinin", unit: "mg/dL", min: 0.6, max: 1.2, cMin: 0, cMax: 4.0 },
+                { id: "l_bun", name: "BUN", unit: "mg/dL", min: 10, max: 20, cMin: 0, cMax: 100 }
+            ],
+            "Kan Gazı (ABG)": [
+                { id: "l_ph", name: "pH", unit: "", min: 7.35, max: 7.45, cMin: 7.20, cMax: 7.60 },
+                { id: "l_pco2", name: "pCO2", unit: "mmHg", min: 35, max: 45, cMin: 20, cMax: 60 },
+                { id: "l_po2", name: "pO2", unit: "mmHg", min: 80, max: 100, cMin: 40, cMax: 200 },
+                { id: "l_hco3", name: "HCO3", unit: "mEq/L", min: 22, max: 26, cMin: 10, cMax: 40 }
             ]
         };
 
@@ -439,22 +454,16 @@
         let tempDrugForm = { indications: [], sideEffects: [], interactions: [] };
 
         // Flowchart State
-        let isLinkMode = false;
-        let linkSourceNodeId = null;
-        let draggedNode = null;
-        let dragOffset = { x: 0, y: 0 };
+        let isLinkMode = false; let linkSourceNodeId = null; let draggedNode = null; let dragOffset = { x: 0, y: 0 };
 
         function getEmptyCase() {
-            return { 
-                id: null, name: "", notes: "", diagnosis: "", 
-                activeSymptoms: [], customSymptoms: [], 
-                carePlans: [] 
-            };
+            return { id: null, name: "", notes: "", diagnosis: "", activeSymptoms: [], customSymptoms: [], carePlans: [], labs: [] };
         }
 
         // === 3. INIT & SEKME YÖNETİMİ ===
         window.onload = () => {
             renderSymptoms();
+            
             globalNandaDict = JSON.parse(localStorage.getItem('nurseSim_nanda_dict')) || defaultNanda;
             globalDrugs = JSON.parse(localStorage.getItem('nurseSim_drugs')) || [];
             globalDrugCats = JSON.parse(localStorage.getItem('nurseSim_drug_cats')) || globalDrugCats;
@@ -464,17 +473,15 @@
             renderDrugCategories();
             renderDrugList();
             updateFlowchartSelect();
+            initLabSelects();
             loadLibrary();
         };
 
         function switchTab(btn, mode) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            
             btn.classList.add('active');
-            const targetId = btn.getAttribute('data-target');
-            document.getElementById(targetId).classList.add('active');
-            
+            document.getElementById(btn.getAttribute('data-target')).classList.add('active');
             document.getElementById('case-save-section').style.display = (mode === 'vaka') ? 'block' : 'none';
         }
 
@@ -483,13 +490,9 @@
                 document.querySelectorAll('.body-part, .silhouette').forEach(el => { el.className.baseVal ? el.className.baseVal = el.className.baseVal.replace(/anim-[a-z-]+/g, '') : el.className = el.className.replace(/anim-[a-z-]+/g, ''); });
                 document.querySelectorAll('.btn-symptom').forEach(btn => btn.classList.remove('active'));
                 hideBubble();
-                
                 currentCase = getEmptyCase();
-                document.getElementById('case-name').value = '';
-                document.getElementById('disease-diagnosis').value = '';
-                document.getElementById('nursing-notes').value = '';
-                
-                renderCustomSymptoms(); renderCarePlans(); updateActiveSymptomsUI();
+                document.getElementById('case-name').value = ''; document.getElementById('disease-diagnosis').value = ''; document.getElementById('nursing-notes').value = '';
+                renderCustomSymptoms(); renderCarePlans(); renderCaseLabs(); updateActiveSymptomsUI();
                 switchTab(document.querySelector('.tab[data-target="tab-status"]'), 'vaka');
             }
         }
@@ -498,12 +501,10 @@
         function renderSymptoms() {
             const container = document.getElementById('symptoms-container');
             for (const [category, symptoms] of Object.entries(symptomsDB)) {
-                let catDiv = document.createElement('div');
-                catDiv.innerHTML = `<h3 class="category-title">${category}</h3>`;
+                let catDiv = document.createElement('div'); catDiv.innerHTML = `<h3 class="category-title">${category}</h3>`;
                 let btnGroup = document.createElement('div'); btnGroup.className = 'button-group';
                 symptoms.forEach(symp => {
-                    let btn = document.createElement('button'); btn.className = 'btn-symptom'; btn.id = `btn-${symp.id}`;
-                    btn.innerText = symp.name; btn.onclick = () => toggleSymptom(symp); btnGroup.appendChild(btn);
+                    let btn = document.createElement('button'); btn.className = 'btn-symptom'; btn.id = `btn-${symp.id}`; btn.innerText = symp.name; btn.onclick = () => toggleSymptom(symp); btnGroup.appendChild(btn);
                 });
                 catDiv.appendChild(btnGroup); container.appendChild(catDiv);
             }
@@ -525,16 +526,12 @@
             const nameInput = document.getElementById('custom-symptom-name'); const quoteInput = document.getElementById('custom-symptom-quote');
             if(!nameInput.value.trim()) return alert('Belirti adı girin.');
             const newSymp = { id: 'custom_' + Date.now(), name: nameInput.value.trim(), part: 'none', animClass: '', quote: quoteInput.value.trim() || '...' };
-            currentCase.customSymptoms.push(newSymp); nameInput.value = ''; quoteInput.value = '';
-            renderCustomSymptoms(); toggleSymptom(newSymp);
+            currentCase.customSymptoms.push(newSymp); nameInput.value = ''; quoteInput.value = ''; renderCustomSymptoms(); toggleSymptom(newSymp);
         }
 
         function toggleSymptom(sympObj) {
-            const btn = document.getElementById(`btn-${sympObj.id}`);
-            const index = currentCase.activeSymptoms.indexOf(sympObj.id);
-            let targetPart;
-            if(sympObj.part === "body-wrapper") targetPart = document.getElementById("silhouette");
-            else if (sympObj.part && sympObj.part !== "none") targetPart = document.getElementById(sympObj.part);
+            const btn = document.getElementById(`btn-${sympObj.id}`); const index = currentCase.activeSymptoms.indexOf(sympObj.id);
+            let targetPart; if(sympObj.part === "body-wrapper") targetPart = document.getElementById("silhouette"); else if (sympObj.part && sympObj.part !== "none") targetPart = document.getElementById(sympObj.part);
 
             if (index > -1) {
                 currentCase.activeSymptoms.splice(index, 1);
@@ -558,78 +555,124 @@
                 if(name) listEl.innerHTML += `<li>${name}</li>`;
             });
         }
-
-        function showBubble(text) {
-            const bubble = document.getElementById('speech-bubble'); bubble.innerText = text; bubble.classList.add('show');
-            clearTimeout(bubbleTimeout); bubbleTimeout = setTimeout(() => bubble.classList.remove('show'), 4000);
-        }
+        function showBubble(text) { const bubble = document.getElementById('speech-bubble'); bubble.innerText = text; bubble.classList.add('show'); clearTimeout(bubbleTimeout); bubbleTimeout = setTimeout(() => bubble.classList.remove('show'), 4000); }
         function hideBubble() { document.getElementById('speech-bubble').classList.remove('show'); }
+
+        // === YENİ MODÜL: LAB BULGULARI ===
+        function initLabSelects() {
+            const catSel = document.getElementById('lab-category'); catSel.innerHTML = '<option value="">-- Kategori --</option>';
+            Object.keys(labDB).forEach(cat => { catSel.innerHTML += `<option value="${cat}">${cat}</option>`; });
+        }
+        
+        function renderLabSelects() {
+            const cat = document.getElementById('lab-category').value;
+            const testSel = document.getElementById('lab-test'); testSel.innerHTML = '<option value="">-- Test Seçin --</option>';
+            if(cat && labDB[cat]) {
+                labDB[cat].forEach(t => { testSel.innerHTML += `<option value="${t.id}">${t.name} (${t.unit})</option>`; });
+            }
+        }
+
+        function addCaseLab() {
+            const cat = document.getElementById('lab-category').value;
+            const testId = document.getElementById('lab-test').value;
+            const valStr = document.getElementById('lab-value').value;
+            if(!cat || !testId || valStr === "") return alert("Lütfen kategori, test ve değer girin.");
+            
+            const val = parseFloat(valStr);
+            const testDef = labDB[cat].find(t => t.id === testId);
+            
+            let status = "normal"; let isPanic = false;
+            if (val <= testDef.cMin) { status = "panic-low"; isPanic = true; }
+            else if (val >= testDef.cMax) { status = "panic-high"; isPanic = true; }
+            else if (val < testDef.min) { status = "low"; }
+            else if (val > testDef.max) { status = "high"; }
+
+            const labRecord = { id: 'clab_' + Date.now(), testId: testDef.id, name: testDef.name, unit: testDef.unit, val: val, min: testDef.min, max: testDef.max, status: status };
+            currentCase.labs.push(labRecord);
+            document.getElementById('lab-value').value = '';
+            renderCaseLabs();
+            
+            if(isPanic) triggerPanicProtocol(labRecord);
+        }
+
+        function triggerPanicProtocol(lab) {
+            alert(`⚠️ PANİC UYARISI: ${lab.name} = ${lab.val} ${lab.unit}\n\nBu değer yaşamı tehdit edici sınırlardadır! Bakım planına acil görev eklendi.`);
+            
+            // Bakım planına otomatik olarak Panic bloğu aç
+            const diagName = `⚠️ KRİTİK LAB: ${lab.name} Bozukluğu`;
+            let existingPlan = currentCase.carePlans.find(p => p.diagnosis === diagName);
+            
+            if(!existingPlan) {
+                existingPlan = { id: 'cp_' + Date.now(), diagnosis: diagName, interventions: [], isPanic: true };
+                currentCase.carePlans.unshift(existingPlan); // En üste ekle
+            }
+            
+            let actionText = `ACİL: ${lab.name} değeri ${lab.val} (Kritik). Hekime bildirildi, yeni istemler uygulanıyor, vital takibi sıklaştırıldı.`;
+            existingPlan.interventions.push({ id: 'int_' + Date.now(), text: actionText, done: false });
+            
+            renderCarePlans();
+        }
+
+        function removeCaseLab(id) { currentCase.labs = currentCase.labs.filter(l => l.id !== id); renderCaseLabs(); }
+
+        function renderCaseLabs() {
+            const tbody = document.getElementById('case-labs-tbody'); tbody.innerHTML = '';
+            if(!currentCase.labs || currentCase.labs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:gray;">Henüz lab bulgusu eklenmedi.</td></tr>'; return;
+            }
+            
+            currentCase.labs.forEach(lab => {
+                let colorClass = "lab-normal"; let icon = "✔"; let trClass = "";
+                if(lab.status === "low") { colorClass = "lab-low"; icon = "↓"; }
+                else if(lab.status === "high") { colorClass = "lab-high"; icon = "↑"; }
+                else if(lab.status === "panic-low") { colorClass = "lab-low"; icon = "↓↓ (PANİC)"; trClass = "lab-panic"; }
+                else if(lab.status === "panic-high") { colorClass = "lab-high"; icon = "↑↑ (PANİC)"; trClass = "lab-panic"; }
+
+                tbody.innerHTML += `
+                    <tr class="${trClass}">
+                        <td><b>${lab.name}</b></td>
+                        <td class="${colorClass}">${lab.val} ${lab.unit} ${icon}</td>
+                        <td style="color:gray;">${lab.min} - ${lab.max}</td>
+                        <td><button class="delete-btn" onclick="removeCaseLab('${lab.id}')">&times;</button></td>
+                    </tr>`;
+            });
+        }
 
         // === 5. YENİ YAPISAL BAKIM PLANI (TANI -> GİRİŞİM) ===
         function addCarePlanDiagnosis() {
             const input = document.getElementById('case-nanda-input'); const val = input.value.trim();
-            if(!val) return;
-            currentCase.carePlans.push({ id: 'cp_' + Date.now(), diagnosis: val, interventions: [] });
-            input.value = ''; renderCarePlans();
+            if(!val) return; currentCase.carePlans.push({ id: 'cp_' + Date.now(), diagnosis: val, interventions: [] }); input.value = ''; renderCarePlans();
         }
-
-        function deleteCarePlan(planId) {
-            currentCase.carePlans = currentCase.carePlans.filter(p => p.id !== planId); renderCarePlans();
-        }
-
+        function deleteCarePlan(planId) { currentCase.carePlans = currentCase.carePlans.filter(p => p.id !== planId); renderCarePlans(); }
+        
         function addInterventionToDiagnosis(planId) {
-            let input = document.getElementById(`int-input-${planId}`); let val = input.value.trim();
-            if(!val) return;
+            let input = document.getElementById(`int-input-${planId}`); let val = input.value.trim(); if(!val) return;
             let plan = currentCase.carePlans.find(p => p.id === planId);
             if(plan) { plan.interventions.push({ id: 'int_' + Date.now(), text: val, done: false }); input.value = ''; renderCarePlans(); }
         }
-
-        function toggleIntervention(planId, intId) {
-             let plan = currentCase.carePlans.find(p => p.id === planId);
-             if(plan) { let int = plan.interventions.find(i => i.id === intId); if(int) int.done = !int.done; }
-             renderCarePlans();
-        }
-
-        function deleteIntervention(planId, intId) {
-             let plan = currentCase.carePlans.find(p => p.id === planId);
-             if(plan) plan.interventions = plan.interventions.filter(i => i.id !== intId);
-             renderCarePlans();
-        }
+        function toggleIntervention(planId, intId) { let plan = currentCase.carePlans.find(p => p.id === planId); if(plan) { let int = plan.interventions.find(i => i.id === intId); if(int) int.done = !int.done; } renderCarePlans(); }
+        function deleteIntervention(planId, intId) { let plan = currentCase.carePlans.find(p => p.id === planId); if(plan) plan.interventions = plan.interventions.filter(i => i.id !== intId); renderCarePlans(); }
 
         function renderCarePlans() {
             const container = document.getElementById('care-plans-container'); container.innerHTML = '';
-            if(!currentCase.carePlans || currentCase.carePlans.length === 0) {
-                container.innerHTML = '<div style="color:gray; font-size:0.9rem; text-align:center;">Önce yukarıdan bir tanı ekleyin.</div>'; return;
-            }
+            if(!currentCase.carePlans || currentCase.carePlans.length === 0) { container.innerHTML = '<div style="color:gray; font-size:0.9rem; text-align:center;">Önce yukarıdan bir tanı ekleyin.</div>'; return; }
+            
             currentCase.carePlans.forEach(plan => {
                 let card = document.createElement('div'); card.className = 'care-plan-card';
+                let headerClass = plan.isPanic || plan.diagnosis.includes("KRİTİK") ? 'care-plan-header panic' : 'care-plan-header';
+                
                 const pending = plan.interventions.filter(i => !i.done); const completed = plan.interventions.filter(i => i.done);
                 let interventionsHTML = '';
-                pending.forEach(i => {
-                    interventionsHTML += `
-                        <li class="intervention">
-                            <input type="checkbox" onchange="toggleIntervention('${plan.id}', '${i.id}')" style="cursor:pointer; width:18px; height:18px;">
-                            <span>${i.text}</span><button class="delete-btn" onclick="deleteIntervention('${plan.id}', '${i.id}')">&times;</button>
-                        </li>`;
-                });
-                completed.forEach(i => {
-                    interventionsHTML += `
-                        <li class="intervention done">
-                            <input type="checkbox" checked onchange="toggleIntervention('${plan.id}', '${i.id}')" style="cursor:pointer; width:18px; height:18px;">
-                            <span style="text-decoration:line-through; color:gray;">${i.text}</span><span class="badge-done">✓ Yapıldı</span>
-                            <button class="delete-btn" onclick="deleteIntervention('${plan.id}', '${i.id}')">&times;</button>
-                        </li>`;
-                });
+                pending.forEach(i => { interventionsHTML += `<li class="intervention"><input type="checkbox" onchange="toggleIntervention('${plan.id}', '${i.id}')" style="cursor:pointer; width:18px; height:18px;"><span>${i.text}</span><button class="delete-btn" onclick="deleteIntervention('${plan.id}', '${i.id}')">&times;</button></li>`; });
+                completed.forEach(i => { interventionsHTML += `<li class="intervention done"><input type="checkbox" checked onchange="toggleIntervention('${plan.id}', '${i.id}')" style="cursor:pointer; width:18px; height:18px;"><span style="text-decoration:line-through; color:gray;">${i.text}</span><span class="badge-done">✓ Yapıldı</span><button class="delete-btn" onclick="deleteIntervention('${plan.id}', '${i.id}')">&times;</button></li>`; });
+                
                 card.innerHTML = `
-                    <div class="care-plan-header">
+                    <div class="${headerClass}">
                         <h4>📋 ${plan.diagnosis}</h4><button class="delete-btn" onclick="deleteCarePlan('${plan.id}')" style="font-size:1.5rem;">&times;</button>
                     </div>
                     <div class="care-plan-body">
                         <ul class="item-list" style="margin-bottom:10px;">${interventionsHTML}</ul>
-                        <div class="input-row" style="margin-bottom:0;">
-                            <input type="text" id="int-input-${plan.id}" placeholder="Bu tanıya özel girişim ekle..." onkeypress="if(event.key==='Enter') addInterventionToDiagnosis('${plan.id}')">
-                            <button class="btn-add" onclick="addInterventionToDiagnosis('${plan.id}')">Girişim Ekle</button>
-                        </div>
+                        <div class="input-row" style="margin-bottom:0;"><input type="text" id="int-input-${plan.id}" placeholder="Bu tanıya özel girişim ekle..." onkeypress="if(event.key==='Enter') addInterventionToDiagnosis('${plan.id}')"><button class="btn-add" onclick="addInterventionToDiagnosis('${plan.id}')">Girişim Ekle</button></div>
                     </div>`;
                 container.appendChild(card);
             });
@@ -644,164 +687,62 @@
                 listEl.innerHTML += `<li class="nanda-global-item">${d} <button class="delete-btn" onclick="removeGlobalNanda(${idx})">&times;</button></li>`;
             });
         }
-        function addGlobalNanda() {
-            const val = document.getElementById('global-nanda-input').value.trim(); if(!val) return;
-            if(!globalNandaDict.includes(val)) { globalNandaDict.push(val); localStorage.setItem('nurseSim_nanda_dict', JSON.stringify(globalNandaDict)); renderGlobalNandaDict(); }
-            document.getElementById('global-nanda-input').value = '';
-        }
+        function addGlobalNanda() { const val = document.getElementById('global-nanda-input').value.trim(); if(!val) return; if(!globalNandaDict.includes(val)) { globalNandaDict.push(val); localStorage.setItem('nurseSim_nanda_dict', JSON.stringify(globalNandaDict)); renderGlobalNandaDict(); } document.getElementById('global-nanda-input').value = ''; }
         function removeGlobalNanda(idx) { globalNandaDict.splice(idx, 1); localStorage.setItem('nurseSim_nanda_dict', JSON.stringify(globalNandaDict)); renderGlobalNandaDict(); }
 
         // === 7. BAĞIMSIZ AKIŞ ŞEMASI (FLOWCHART) ===
-        function addFlowNodeUI() {
-            const shape = document.getElementById('flow-shape').value; const color = document.getElementById('flow-color').value;
-            currentFlowchart.nodes.push({ id: 'node_' + Date.now(), shape, color, text: 'Metin...', x: 150, y: 50 }); drawFlowchartDOM();
-        }
-
-        function toggleLinkMode() {
-            isLinkMode = !isLinkMode; linkSourceNodeId = null;
-            const btn = document.getElementById('link-mode-btn'); const canvas = document.getElementById('flow-canvas');
-            if(isLinkMode) { btn.classList.add('active'); btn.innerText = "🔗 BAĞLANTI MODU: AÇIK"; canvas.classList.add('linking'); } 
-            else { btn.classList.remove('active'); btn.innerText = "🔗 Bağlantı Modu: KAPALI"; canvas.classList.remove('linking'); document.querySelectorAll('.flow-node').forEach(n => n.classList.remove('link-source')); }
-        }
-
+        function addFlowNodeUI() { const shape = document.getElementById('flow-shape').value; const color = document.getElementById('flow-color').value; currentFlowchart.nodes.push({ id: 'node_' + Date.now(), shape, color, text: 'Metin...', x: 150, y: 50 }); drawFlowchartDOM(); }
+        function toggleLinkMode() { isLinkMode = !isLinkMode; linkSourceNodeId = null; const btn = document.getElementById('link-mode-btn'); const canvas = document.getElementById('flow-canvas'); if(isLinkMode) { btn.classList.add('active'); btn.innerText = "🔗 BAĞLANTI MODU: AÇIK"; canvas.classList.add('linking'); } else { btn.classList.remove('active'); btn.innerText = "🔗 Bağlantı Modu: KAPALI"; canvas.classList.remove('linking'); document.querySelectorAll('.flow-node').forEach(n => n.classList.remove('link-source')); } }
         function handleNodeClick(e, id) {
             if(!isLinkMode) return; e.stopPropagation();
             if(!linkSourceNodeId) { linkSourceNodeId = id; document.getElementById(id).classList.add('link-source'); } 
-            else {
-                if(linkSourceNodeId !== id) {
-                    let label = prompt("Ok üzerine metin yazın (İsteğe bağlı):") || "";
-                    currentFlowchart.links.push({ id: 'link_'+Date.now(), source: linkSourceNodeId, target: id, label: label });
-                }
-                document.getElementById(linkSourceNodeId).classList.remove('link-source'); linkSourceNodeId = null; drawFlowLinks();
-            }
+            else { if(linkSourceNodeId !== id) { let label = prompt("Ok üzerine metin yazın (İsteğe bağlı):") || ""; currentFlowchart.links.push({ id: 'link_'+Date.now(), source: linkSourceNodeId, target: id, label: label }); } document.getElementById(linkSourceNodeId).classList.remove('link-source'); linkSourceNodeId = null; drawFlowLinks(); }
         }
-
         function drawFlowchartDOM() {
-            const canvas = document.getElementById('flow-canvas');
-            Array.from(canvas.children).forEach(child => { if(child.tagName !== 'svg' && child.tagName !== 'SVG') canvas.removeChild(child); });
+            const canvas = document.getElementById('flow-canvas'); Array.from(canvas.children).forEach(child => { if(child.tagName !== 'svg' && child.tagName !== 'SVG') canvas.removeChild(child); });
             currentFlowchart.nodes.forEach(node => {
                 let el = document.createElement('div'); el.className = `flow-node ${node.shape}`; el.id = node.id; el.style.backgroundColor = node.color; el.style.left = node.x + 'px'; el.style.top = node.y + 'px';
-                let inner = document.createElement('div'); inner.className = 'node-inner'; inner.contentEditable = "true"; inner.innerText = node.text;
-                inner.oninput = () => { node.text = inner.innerText; }; inner.onmousedown = (e) => { e.stopPropagation(); };
-                let delBtn = document.createElement('button'); delBtn.className = 'node-delete'; delBtn.innerHTML = 'X';
-                delBtn.onmousedown = (e) => { 
-                    e.stopPropagation(); currentFlowchart.nodes = currentFlowchart.nodes.filter(n => n.id !== node.id);
-                    currentFlowchart.links = currentFlowchart.links.filter(l => l.source !== node.id && l.target !== node.id); drawFlowchartDOM();
-                };
+                let inner = document.createElement('div'); inner.className = 'node-inner'; inner.contentEditable = "true"; inner.innerText = node.text; inner.oninput = () => { node.text = inner.innerText; }; inner.onmousedown = (e) => { e.stopPropagation(); };
+                let delBtn = document.createElement('button'); delBtn.className = 'node-delete'; delBtn.innerHTML = 'X'; delBtn.onmousedown = (e) => { e.stopPropagation(); currentFlowchart.nodes = currentFlowchart.nodes.filter(n => n.id !== node.id); currentFlowchart.links = currentFlowchart.links.filter(l => l.source !== node.id && l.target !== node.id); drawFlowchartDOM(); };
                 el.appendChild(inner); el.appendChild(delBtn);
                 el.onmousedown = (e) => {
-                    if(isLinkMode) { handleNodeClick(e, node.id); return; }
-                    if(e.target === inner || e.target === delBtn) return;
-                    draggedNode = node; const rect = el.getBoundingClientRect(); dragOffset.x = e.clientX - rect.left; dragOffset.y = e.clientY - rect.top;
-                    document.onmousemove = (ev) => {
-                        if(!draggedNode) return; const canvasRect = canvas.getBoundingClientRect();
-                        let newX = ev.clientX - canvasRect.left - dragOffset.x; let newY = ev.clientY - canvasRect.top - dragOffset.y;
-                        if(newX < 0) newX = 0; if(newY < 0) newY = 0; draggedNode.x = newX; draggedNode.y = newY;
-                        el.style.left = newX + 'px'; el.style.top = newY + 'px'; drawFlowLinks();
-                    };
+                    if(isLinkMode) { handleNodeClick(e, node.id); return; } if(e.target === inner || e.target === delBtn) return; draggedNode = node; const rect = el.getBoundingClientRect(); dragOffset.x = e.clientX - rect.left; dragOffset.y = e.clientY - rect.top;
+                    document.onmousemove = (ev) => { if(!draggedNode) return; const canvasRect = canvas.getBoundingClientRect(); let newX = ev.clientX - canvasRect.left - dragOffset.x; let newY = ev.clientY - canvasRect.top - dragOffset.y; if(newX < 0) newX = 0; if(newY < 0) newY = 0; draggedNode.x = newX; draggedNode.y = newY; el.style.left = newX + 'px'; el.style.top = newY + 'px'; drawFlowLinks(); };
                     document.onmouseup = () => { draggedNode = null; document.onmousemove = null; document.onmouseup = null; };
-                };
-                canvas.appendChild(el);
-            });
-            setTimeout(drawFlowLinks, 10);
+                }; canvas.appendChild(el);
+            }); setTimeout(drawFlowLinks, 10);
         }
-
         function drawFlowLinks() {
             const container = document.getElementById('lines-container'); container.innerHTML = '';
             currentFlowchart.links.forEach((link, idx) => {
-                const sEl = document.getElementById(link.source); const tEl = document.getElementById(link.target);
-                if(!sEl || !tEl) return;
-                let sx = parseFloat(sEl.style.left) + sEl.offsetWidth / 2; let sy = parseFloat(sEl.style.top) + sEl.offsetHeight / 2;
-                let tx = parseFloat(tEl.style.left) + tEl.offsetWidth / 2; let ty = parseFloat(tEl.style.top) + tEl.offsetHeight / 2;
-                let line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                line.setAttribute("x1", sx); line.setAttribute("y1", sy); line.setAttribute("x2", tx); line.setAttribute("y2", ty);
-                line.setAttribute("stroke", "#333"); line.setAttribute("stroke-width", "2"); line.setAttribute("marker-end", "url(#arrowhead)");
-                container.appendChild(line);
+                const sEl = document.getElementById(link.source); const tEl = document.getElementById(link.target); if(!sEl || !tEl) return;
+                let sx = parseFloat(sEl.style.left) + sEl.offsetWidth / 2; let sy = parseFloat(sEl.style.top) + sEl.offsetHeight / 2; let tx = parseFloat(tEl.style.left) + tEl.offsetWidth / 2; let ty = parseFloat(tEl.style.top) + tEl.offsetHeight / 2;
+                let line = document.createElementNS("http://www.w3.org/2000/svg", "line"); line.setAttribute("x1", sx); line.setAttribute("y1", sy); line.setAttribute("x2", tx); line.setAttribute("y2", ty); line.setAttribute("stroke", "#333"); line.setAttribute("stroke-width", "2"); line.setAttribute("marker-end", "url(#arrowhead)"); container.appendChild(line);
                 let cx = (sx + tx) / 2; let cy = (sy + ty) / 2;
-                if(link.label) {
-                    let bg = document.createElementNS("http://www.w3.org/2000/svg", "rect"); bg.setAttribute("x", cx - 20); bg.setAttribute("y", cy - 10); bg.setAttribute("width", 40); bg.setAttribute("height", 20); bg.setAttribute("fill", "white"); bg.setAttribute("rx", 4); container.appendChild(bg);
-                    let text = document.createElementNS("http://www.w3.org/2000/svg", "text"); text.setAttribute("x", cx); text.setAttribute("y", cy + 4); text.setAttribute("text-anchor", "middle"); text.setAttribute("font-size", "12px"); text.setAttribute("font-weight", "bold"); text.setAttribute("fill", "#00796b"); text.textContent = link.label;
-                    text.style.cursor = 'pointer'; text.onclick = () => { if(confirm("Oku sil?")) { currentFlowchart.links.splice(idx,1); drawFlowLinks(); } }; container.appendChild(text);
-                } else {
-                    let hitbox = document.createElementNS("http://www.w3.org/2000/svg", "circle"); hitbox.setAttribute("cx", cx); hitbox.setAttribute("cy", cy); hitbox.setAttribute("r", 10); hitbox.setAttribute("fill", "rgba(255,0,0,0.1)"); hitbox.style.cursor = 'pointer';
-                    hitbox.onclick = () => { if(confirm("Oku sil?")) { currentFlowchart.links.splice(idx,1); drawFlowLinks(); } }; container.appendChild(hitbox);
-                }
+                if(link.label) { let bg = document.createElementNS("http://www.w3.org/2000/svg", "rect"); bg.setAttribute("x", cx - 20); bg.setAttribute("y", cy - 10); bg.setAttribute("width", 40); bg.setAttribute("height", 20); bg.setAttribute("fill", "white"); bg.setAttribute("rx", 4); container.appendChild(bg); let text = document.createElementNS("http://www.w3.org/2000/svg", "text"); text.setAttribute("x", cx); text.setAttribute("y", cy + 4); text.setAttribute("text-anchor", "middle"); text.setAttribute("font-size", "12px"); text.setAttribute("font-weight", "bold"); text.setAttribute("fill", "#00796b"); text.textContent = link.label; text.style.cursor = 'pointer'; text.onclick = () => { if(confirm("Oku sil?")) { currentFlowchart.links.splice(idx,1); drawFlowLinks(); } }; container.appendChild(text); } 
+                else { let hitbox = document.createElementNS("http://www.w3.org/2000/svg", "circle"); hitbox.setAttribute("cx", cx); hitbox.setAttribute("cy", cy); hitbox.setAttribute("r", 10); hitbox.setAttribute("fill", "rgba(255,0,0,0.1)"); hitbox.style.cursor = 'pointer'; hitbox.onclick = () => { if(confirm("Oku sil?")) { currentFlowchart.links.splice(idx,1); drawFlowLinks(); } }; container.appendChild(hitbox); }
             });
         }
         function clearFlowchart() { if(confirm("Şemayı temizlemek istiyor musunuz?")) { currentFlowchart = { id: null, name: "", nodes: [], links: [] }; document.getElementById('flow-name').value = ""; drawFlowchartDOM(); } }
-        function saveGlobalFlowchart() {
-            const name = document.getElementById('flow-name').value.trim(); if(!name) return alert("Şemaya ad verin.");
-            currentFlowchart.name = name; currentFlowchart.id = currentFlowchart.id || 'flow_' + Date.now();
-            const idx = globalFlowcharts.findIndex(f => f.id === currentFlowchart.id);
-            if(idx > -1) globalFlowcharts[idx] = currentFlowchart; else globalFlowcharts.push(currentFlowchart);
-            localStorage.setItem('nurseSim_flowcharts', JSON.stringify(globalFlowcharts)); alert("Kaydedildi!"); updateFlowchartSelect();
-        }
-        function updateFlowchartSelect() {
-            const sel = document.getElementById('saved-flows-select'); sel.innerHTML = '<option value="">-- Şemalarım --</option>';
-            globalFlowcharts.forEach(f => { let opt = document.createElement('option'); opt.value = f.id; opt.innerText = f.name; sel.appendChild(opt); });
-        }
-        function loadSelectedFlowchart() {
-            const id = document.getElementById('saved-flows-select').value; if(!id) return;
-            const flow = globalFlowcharts.find(f => f.id === id); if(flow) { currentFlowchart = JSON.parse(JSON.stringify(flow)); document.getElementById('flow-name').value = currentFlowchart.name; drawFlowchartDOM(); }
-        }
+        function saveGlobalFlowchart() { const name = document.getElementById('flow-name').value.trim(); if(!name) return alert("Şemaya ad verin."); currentFlowchart.name = name; currentFlowchart.id = currentFlowchart.id || 'flow_' + Date.now(); const idx = globalFlowcharts.findIndex(f => f.id === currentFlowchart.id); if(idx > -1) globalFlowcharts[idx] = currentFlowchart; else globalFlowcharts.push(currentFlowchart); localStorage.setItem('nurseSim_flowcharts', JSON.stringify(globalFlowcharts)); alert("Kaydedildi!"); updateFlowchartSelect(); }
+        function updateFlowchartSelect() { const sel = document.getElementById('saved-flows-select'); sel.innerHTML = '<option value="">-- Şemalarım --</option>'; globalFlowcharts.forEach(f => { let opt = document.createElement('option'); opt.value = f.id; opt.innerText = f.name; sel.appendChild(opt); }); }
+        function loadSelectedFlowchart() { const id = document.getElementById('saved-flows-select').value; if(!id) return; const flow = globalFlowcharts.find(f => f.id === id); if(flow) { currentFlowchart = JSON.parse(JSON.stringify(flow)); document.getElementById('flow-name').value = currentFlowchart.name; drawFlowchartDOM(); } }
 
         // === 8. GENEL İLAÇ DEFTERİ & DİNAMİK KATEGORİ ===
-        function renderDrugCategories() {
-            const sel = document.getElementById('df-category'); sel.innerHTML = '';
-            globalDrugCats.forEach(c => {
-                let opt = document.createElement('option'); opt.value = c; opt.innerText = c; sel.appendChild(opt);
-            });
-            sel.innerHTML += '<option value="Diğer">Diğer (Belirtiniz)...</option>';
-        }
-
-        function toggleCustomCategory() {
-            const val = document.getElementById('df-category').value;
-            document.getElementById('custom-cat-row').style.display = (val === 'Diğer') ? 'flex' : 'none';
-        }
-
+        function renderDrugCategories() { const sel = document.getElementById('df-category'); sel.innerHTML = ''; globalDrugCats.forEach(c => { let opt = document.createElement('option'); opt.value = c; opt.innerText = c; sel.appendChild(opt); }); sel.innerHTML += '<option value="Diğer">Diğer (Belirtiniz)...</option>'; }
+        function toggleCustomCategory() { const val = document.getElementById('df-category').value; document.getElementById('custom-cat-row').style.display = (val === 'Diğer') ? 'flex' : 'none'; }
         function addDrugTag(type) { const input = document.getElementById(type === 'indications' ? 'df-ind-input' : 'df-side-input'); const val = input.value.trim(); if(!val) return; tempDrugForm[type].push(val); input.value = ''; renderDrugTags(type); }
         function renderDrugTags(type) { const container = document.getElementById(type === 'indications' ? 'df-ind-tags' : 'df-side-tags'); container.innerHTML = ''; tempDrugForm[type].forEach((tag, idx) => { container.innerHTML += `<div class="tag-chip">${tag} <span onclick="tempDrugForm['${type}'].splice(${idx},1); renderDrugTags('${type}')">&times;</span></div>`; }); }
-        
-        function addDrugInteraction() {
-            const name = document.getElementById('df-inter-name').value.trim(); const risk = document.getElementById('df-inter-risk').value;
-            if(!name) return;
-            tempDrugForm.interactions.push({ name, risk }); document.getElementById('df-inter-name').value = ''; renderInteractions();
-        }
-        function renderInteractions() {
-            const list = document.getElementById('df-inter-list'); list.innerHTML = '';
-            tempDrugForm.interactions.forEach((inter, idx) => {
-                let color = inter.risk === 'Yüksek' ? 'red' : 'orange';
-                list.innerHTML += `<div style="color:${color}; font-size:0.85rem; margin-top:5px; border:1px dashed ${color}; padding:5px; border-radius:4px;">⚠️ ${inter.name} (${inter.risk} Risk) <button style="float:right; border:none;background:none;cursor:pointer;" onclick="tempDrugForm.interactions.splice(${idx},1); renderInteractions();">❌</button></div>`;
-            });
-        }
-
+        function addDrugInteraction() { const name = document.getElementById('df-inter-name').value.trim(); const risk = document.getElementById('df-inter-risk').value; if(!name) return; tempDrugForm.interactions.push({ name, risk }); document.getElementById('df-inter-name').value = ''; renderInteractions(); }
+        function renderInteractions() { const list = document.getElementById('df-inter-list'); list.innerHTML = ''; tempDrugForm.interactions.forEach((inter, idx) => { let color = inter.risk === 'Yüksek' ? 'red' : 'orange'; list.innerHTML += `<div style="color:${color}; font-size:0.85rem; margin-top:5px; border:1px dashed ${color}; padding:5px; border-radius:4px;">⚠️ ${inter.name} (${inter.risk} Risk) <button style="float:right; border:none;background:none;cursor:pointer;" onclick="tempDrugForm.interactions.splice(${idx},1); renderInteractions();">❌</button></div>`; }); }
         function saveNewDrug() {
-            const name = document.getElementById('df-name').value.trim(); const active = document.getElementById('df-active').value.trim(); 
-            let cat = document.getElementById('df-category').value;
-            
+            const name = document.getElementById('df-name').value.trim(); const active = document.getElementById('df-active').value.trim(); let cat = document.getElementById('df-category').value;
             if(!name || !active) return alert("İlaç Adı ve Etken Madde zorunludur!");
-            
-            if(cat === 'Diğer') {
-                const customCat = document.getElementById('df-custom-category').value.trim();
-                if(!customCat) return alert("Lütfen yeni ilaç grubunu (kategorisini) yazın.");
-                cat = customCat;
-                if(!globalDrugCats.includes(cat)) {
-                    globalDrugCats.push(cat);
-                    localStorage.setItem('nurseSim_drug_cats', JSON.stringify(globalDrugCats));
-                    renderDrugCategories();
-                }
-            }
-
+            if(cat === 'Diğer') { const customCat = document.getElementById('df-custom-category').value.trim(); if(!customCat) return alert("Yeni ilaç grubunu yazın."); cat = customCat; if(!globalDrugCats.includes(cat)) { globalDrugCats.push(cat); localStorage.setItem('nurseSim_drug_cats', JSON.stringify(globalDrugCats)); renderDrugCategories(); } }
             globalDrugs.push({ id: 'drug_' + Date.now(), name, active, category: cat, indications: [...tempDrugForm.indications], sideEffects: [...tempDrugForm.sideEffects], interactions: [...tempDrugForm.interactions] });
             localStorage.setItem('nurseSim_drugs', JSON.stringify(globalDrugs)); 
-            
-            document.getElementById('df-name').value = ''; document.getElementById('df-active').value = ''; document.getElementById('df-custom-category').value = '';
-            document.getElementById('custom-cat-row').style.display = 'none';
-            tempDrugForm = { indications: [], sideEffects: [], interactions: [] }; 
-            renderDrugTags('indications'); renderDrugTags('sideEffects'); renderInteractions();
-            document.getElementById('drug-form-panel').style.display = 'none'; alert("İlaç Eklendi!"); renderDrugList();
+            document.getElementById('df-name').value = ''; document.getElementById('df-active').value = ''; document.getElementById('df-custom-category').value = ''; document.getElementById('custom-cat-row').style.display = 'none'; tempDrugForm = { indications: [], sideEffects: [], interactions: [] }; renderDrugTags('indications'); renderDrugTags('sideEffects'); renderInteractions(); document.getElementById('drug-form-panel').style.display = 'none'; alert("İlaç Eklendi!"); renderDrugList();
         }
-
         function filterDrugs() { renderDrugList(document.getElementById('drug-search').value.toLowerCase()); }
         function renderDrugList(query = "") {
             const container = document.getElementById('drug-list-container'); container.innerHTML = '';
@@ -810,76 +751,35 @@
             filtered.forEach(d => {
                 let card = document.createElement('div'); card.className = 'drug-card';
                 let inters = d.interactions ? d.interactions.map(i => `<div class="interaction-alert ${i.risk==='Orta'?'medium':''}"><b>⚠️ ETKİLEŞİM (${i.risk}):</b> ${i.name} kullanımı risklidir.</div>`).join('') : '';
-                card.innerHTML = `
-                    <div class="drug-header" onclick="this.nextElementSibling.classList.toggle('open')">
-                        <span>💊 ${d.name} <small style="color:gray; font-weight:normal;">(${d.active})</small></span>
-                        <span style="font-size:0.8rem; background:#e8eaf6; color:var(--global-tab); padding:2px 8px; border-radius:10px;">${d.category}</span>
-                    </div>
-                    <div class="drug-body">
-                        <b>Endikasyonlar:</b> <div style="display:flex;gap:5px;flex-wrap:wrap;margin:5px 0;">${d.indications.map(i=>`<span class="tag-chip">${i}</span>`).join('') || '-'}</div>
-                        <b>Yan Etkiler:</b> <div style="display:flex;gap:5px;flex-wrap:wrap;margin:5px 0;">${d.sideEffects.map(i=>`<span class="tag-chip" style="color:var(--accent); border-color:var(--accent);">${i}</span>`).join('') || '-'}</div>
-                        ${inters}
-                    </div>`; container.appendChild(card);
+                card.innerHTML = `<div class="drug-header" onclick="this.nextElementSibling.classList.toggle('open')"><span>💊 ${d.name} <small style="color:gray; font-weight:normal;">(${d.active})</small></span><span style="font-size:0.8rem; background:#e8eaf6; color:var(--global-tab); padding:2px 8px; border-radius:10px;">${d.category}</span></div><div class="drug-body"><b>Endikasyonlar:</b> <div style="display:flex;gap:5px;flex-wrap:wrap;margin:5px 0;">${d.indications.map(i=>`<span class="tag-chip">${i}</span>`).join('') || '-'}</div><b>Yan Etkiler:</b> <div style="display:flex;gap:5px;flex-wrap:wrap;margin:5px 0;">${d.sideEffects.map(i=>`<span class="tag-chip" style="color:var(--accent); border-color:var(--accent);">${i}</span>`).join('') || '-'}</div>${inters}</div>`; container.appendChild(card);
             });
         }
 
         // === 9. VAKA KAYDETME KÜTÜPHANESİ ===
         function toggleLibrary() { document.getElementById('library-panel').classList.toggle('open'); loadLibrary(); }
         function saveCase() {
-            const caseNameInput = document.getElementById('case-name').value.trim();
-            if(!caseNameInput) return alert("Lütfen kaydetmeden önce bir Vaka Adı girin.");
-            currentCase.notes = document.getElementById('nursing-notes').value;
-            currentCase.diagnosis = document.getElementById('disease-diagnosis').value;
+            const caseNameInput = document.getElementById('case-name').value.trim(); if(!caseNameInput) return alert("Lütfen kaydetmeden önce bir Vaka Adı girin.");
+            currentCase.notes = document.getElementById('nursing-notes').value; currentCase.diagnosis = document.getElementById('disease-diagnosis').value;
             currentCase.id = currentCase.id || 'case_' + Date.now(); currentCase.date = new Date().toLocaleString('tr-TR'); currentCase.name = caseNameInput;
-
-            let cases = JSON.parse(localStorage.getItem('nurseSim_cases') || '[]');
-            const existIndex = cases.findIndex(c => c.id === currentCase.id);
+            let cases = JSON.parse(localStorage.getItem('nurseSim_cases') || '[]'); const existIndex = cases.findIndex(c => c.id === currentCase.id);
             if(existIndex > -1) cases[existIndex] = currentCase; else cases.push(currentCase);
-            localStorage.setItem('nurseSim_cases', JSON.stringify(cases));
-            alert("✅ Vaka Başarıyla Kaydedildi!"); loadLibrary();
+            localStorage.setItem('nurseSim_cases', JSON.stringify(cases)); alert("✅ Vaka Başarıyla Kaydedildi!"); loadLibrary();
         }
         function loadLibrary() {
-            const cases = JSON.parse(localStorage.getItem('nurseSim_cases') || '[]');
-            const list = document.getElementById('saved-cases-list'); list.innerHTML = '';
+            const cases = JSON.parse(localStorage.getItem('nurseSim_cases') || '[]'); const list = document.getElementById('saved-cases-list'); list.innerHTML = '';
             if(cases.length === 0) return list.innerHTML = '<li style="padding:1rem; color:#757575;">Henüz vaka yok.</li>';
             cases.forEach(c => {
-                let li = document.createElement('li'); li.className = 'case-card';
-                li.innerHTML = `<button class="case-delete" onclick="deleteCase(event, '${c.id}')">&times;</button><div style="font-weight:bold; color:var(--primary-dark);">${c.name}</div><div style="font-size:0.8rem; color:gray;">${c.date}</div>`;
-                li.onclick = () => restoreCase(c); list.appendChild(li);
+                let li = document.createElement('li'); li.className = 'case-card'; li.innerHTML = `<button class="case-delete" onclick="deleteCase(event, '${c.id}')">&times;</button><div style="font-weight:bold; color:var(--primary-dark);">${c.name}</div><div style="font-size:0.8rem; color:gray;">${c.date}</div>`; li.onclick = () => restoreCase(c); list.appendChild(li);
             });
         }
-        function deleteCase(event, caseId) {
-            event.stopPropagation();
-            if(confirm('Vakayı silmek istediğinize emin misiniz?')) {
-                let cases = JSON.parse(localStorage.getItem('nurseSim_cases') || '[]');
-                cases = cases.filter(c => c.id !== caseId); localStorage.setItem('nurseSim_cases', JSON.stringify(cases));
-                if(currentCase.id === caseId) startNewCase(); else loadLibrary();
-            }
-        }
+        function deleteCase(event, caseId) { event.stopPropagation(); if(confirm('Vakayı silmek istediğinize emin misiniz?')) { let cases = JSON.parse(localStorage.getItem('nurseSim_cases') || '[]'); cases = cases.filter(c => c.id !== caseId); localStorage.setItem('nurseSim_cases', JSON.stringify(cases)); if(currentCase.id === caseId) startNewCase(); else loadLibrary(); } }
         function restoreCase(caseData) {
-            document.querySelectorAll('.body-part, .silhouette').forEach(el => { el.className.baseVal ? el.className.baseVal = el.className.baseVal.replace(/anim-[a-z-]+/g, '') : el.className = el.className.replace(/anim-[a-z-]+/g, ''); });
-            document.querySelectorAll('.btn-symptom').forEach(btn => btn.classList.remove('active')); hideBubble();
-            
-            currentCase = JSON.parse(JSON.stringify(caseData));
-            if(!currentCase.carePlans) currentCase.carePlans = [];
-            
-            document.getElementById('case-name').value = currentCase.name; 
-            document.getElementById('nursing-notes').value = currentCase.notes || "";
-            document.getElementById('disease-diagnosis').value = currentCase.diagnosis;
-            renderCustomSymptoms(); renderCarePlans();
-
-            currentCase.activeSymptoms.forEach(sympId => {
-                let sympObj = null;
-                for (const cat in symptomsDB) { const f = symptomsDB[cat].find(s => s.id === sympId); if(f) sympObj = f; }
-                if(!sympObj) sympObj = currentCase.customSymptoms.find(s => s.id === sympId);
-                if(sympObj) {
-                    const btn = document.getElementById(`btn-${sympObj.id}`); if(btn) btn.classList.add('active');
-                    let targetPart; if(sympObj.part === "body-wrapper") targetPart = document.getElementById("silhouette"); else if (sympObj.part && sympObj.part !== "none") targetPart = document.getElementById(sympObj.part);
-                    if(targetPart && sympObj.animClass) targetPart.classList.add(sympObj.animClass);
-                }
-            });
-            updateActiveSymptomsUI(); document.getElementById('library-panel').classList.remove('open');
-            switchTab(document.querySelector('.tab[data-target="tab-status"]'), 'vaka');
+            document.querySelectorAll('.body-part, .silhouette').forEach(el => { el.className.baseVal ? el.className.baseVal = el.className.baseVal.replace(/anim-[a-z-]+/g, '') : el.className = el.className.replace(/anim-[a-z-]+/g, ''); }); document.querySelectorAll('.btn-symptom').forEach(btn => btn.classList.remove('active')); hideBubble();
+            currentCase = JSON.parse(JSON.stringify(caseData)); if(!currentCase.carePlans) currentCase.carePlans = []; if(!currentCase.labs) currentCase.labs = [];
+            document.getElementById('case-name').value = currentCase.name; document.getElementById('nursing-notes').value = currentCase.notes || ""; document.getElementById('disease-diagnosis').value = currentCase.diagnosis;
+            renderCustomSymptoms(); renderCarePlans(); renderCaseLabs();
+            currentCase.activeSymptoms.forEach(sympId => { let sympObj = null; for (const cat in symptomsDB) { const f = symptomsDB[cat].find(s => s.id === sympId); if(f) sympObj = f; } if(!sympObj) sympObj = currentCase.customSymptoms.find(s => s.id === sympId); if(sympObj) { const btn = document.getElementById(`btn-${sympObj.id}`); if(btn) btn.classList.add('active'); let targetPart; if(sympObj.part === "body-wrapper") targetPart = document.getElementById("silhouette"); else if (sympObj.part && sympObj.part !== "none") targetPart = document.getElementById(sympObj.part); if(targetPart && sympObj.animClass) targetPart.classList.add(sympObj.animClass); } });
+            updateActiveSymptomsUI(); document.getElementById('library-panel').classList.remove('open'); switchTab(document.querySelector('.tab[data-target="tab-status"]'), 'vaka');
         }
     </script>
 </body>
