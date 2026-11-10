@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NurseSim - Klinik Karar Verme ve Simülasyon</title>
+    <style>
+        /* === TEMEL DEĞİŞKENLER VE SIFIRLAMA === */
+        :root {
+            --primary: #00796b;
+            --primary-light: #48a999;
+            --primary-dark: #004c40;
+            --bg: #f0f4f4;
+            --surface: #ffffff;
+            --text-dark: #333333;
+            --text-light: #757575;
+            --border: #e0e0e0;
+            --accent: #ff5252;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg); color: var(--text-dark); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+        /* === HEADER === */
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+        header h1 { font-size: 1.5rem; letter-spacing: 1px; }
+        .library-btn {
+            background: rgba(255,255,255,0.2); border: none; color: white; padding: 0.5rem 1rem;
+            border-radius: 4px; cursor: pointer; transition: background 0.3s; font-weight: bold;
+        }
+        .library-btn:hover { background: rgba(255,255,255,0.4); }
+
+        /* === ANA DÜZEN (İKİ SÜTUN) === */
+        .main-container {
+            display: flex; flex: 1; overflow: hidden; position: relative;
+        }
+        .left-col, .right-col {
+            flex: 1; padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; overflow-y: auto;
+        }
+        .left-col { border-right: 2px solid var(--border); background-color: #fafcfc; }
+
+        /* === GÖRSEL SİMÜLASYON ALANI === */
+        .simulation-area {
+            background: var(--surface); padding: 2rem; border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); position: relative;
+            display: flex; justify-content: center; min-height: 350px;
+        }
+        .silhouette { width: 150px; height: auto; overflow: visible; }
+        
+        .body-part { fill: #e0e0e0; stroke: #b0bec5; stroke-width: 2; transition: fill 0.3s; }
+        .heart-part { fill: transparent; stroke: none; }
+
+        /* Konuşma Balonu */
+        .speech-bubble {
+            position: absolute; top: 10%; left: 55%; background: white; padding: 15px;
+            border-radius: 12px; border: 2px solid var(--primary-light);
+            box-shadow: 0 4px 15px rgba(0,121,107,0.2); max-width: 200px;
+            font-size: 0.9rem; font-weight: 500; color: var(--primary-dark);
+            opacity: 0; transform: translateY(10px); transition: all 0.3s ease; pointer-events: none;
+            z-index: 5;
+        }
+        .speech-bubble::before {
+            content: ''; position: absolute; bottom: -10px; left: 20px;
+            border-width: 10px 10px 0 0; border-style: solid; border-color: var(--primary-light) transparent transparent transparent;
+        }
+        .speech-bubble.show { opacity: 1; transform: translateY(0); }
+
+        /* Animasyonlar */
+        @keyframes fast-breath { 0%,100% { transform: scaleY(1); } 50% { transform: scaleY(1.05); fill: #b2ebf2; } }
+        @keyframes cyanosis { 50% { fill: #5c6bc0; } }
+        @keyframes pulse-red { 0%,100% { fill: transparent; } 50% { fill: rgba(255, 82, 82, 0.8); } }
+        @keyframes fast-flash { 0%,100% { fill: transparent; } 50% { fill: rgba(255, 235, 59, 0.8); } }
+        @keyframes pale { 50% { fill: #f5f5f5; stroke: #9e9e9e; } }
+        @keyframes swell { 50% { transform: scaleX(1.1); fill: #dcedc8; } }
+        @keyframes spiral { 50% { fill: #ce93d8; filter: blur(1px); } }
+        @keyframes asymmetry { 50% { transform: skewX(-5deg); } }
+        @keyframes wave-green { 50% { fill: #a5d6a7; } }
+        @keyframes sharp-red { 0%,100% { fill: #e0e0e0; } 50% { fill: #ff1744; } }
+        @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-3px); } 75% { transform: translateX(3px); } }
+        @keyframes fever { 50% { fill: #ff8a65; } }
+        @keyframes dry { 50% { fill: #d7ccc8; } }
+
+        .anim-fast-breath { animation: fast-breath 0.8s infinite; transform-origin: center; }
+        .anim-cyanosis { animation: cyanosis 2s infinite; }
+        .anim-pulse-red { animation: pulse-red 1s infinite; }
+        .anim-fast-flash { animation: fast-flash 0.3s infinite; }
+        .anim-pale { animation: pale 3s infinite; }
+        .anim-swell { animation: swell 2s infinite; transform-origin: center; }
+        .anim-spiral { animation: spiral 2s infinite; }
+        .anim-asymmetry { animation: asymmetry 2s infinite; transform-origin: top; }
+        .anim-wave-green { animation: wave-green 2s infinite; }
+        .anim-sharp-red { animation: sharp-red 1.5s infinite; }
+        .anim-shake { animation: shake 0.5s infinite; }
+        .anim-fever { animation: fever 3s infinite; }
+        .anim-dry { animation: dry 2.5s infinite; }
+
+        /* === BELİRTİ BUTONLARI === */
+        .symptoms-wrapper { display: flex; flex-direction: column; gap: 1rem; }
+        .category-title { font-size: 1rem; color: var(--primary-dark); margin-bottom: 0.5rem; border-bottom: 2px solid var(--primary-light); padding-bottom: 0.2rem; }
+        .button-group { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
+        .btn-symptom {
+            background: var(--surface); border: 1px solid var(--primary-light); color: var(--primary-dark);
+            padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.85rem; cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn-symptom:hover { background: #e0f2f1; }
+        .btn-symptom.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+
+        /* Özel Belirti Ekleme */
+        .custom-adder {
+            background: white; padding: 1rem; border-radius: 8px; border: 1px dashed var(--primary-light);
+            display: flex; flex-direction: column; gap: 0.5rem;
+        }
+        .custom-adder input { padding: 0.5rem; border: 1px solid var(--border); border-radius: 4px; outline: none; }
+        .custom-adder input:focus { border-color: var(--primary); }
+        .btn-add { background: var(--primary); color: white; border: none; padding: 0.5rem; border-radius: 4px; cursor: pointer; }
+        .btn-add:hover { background: var(--primary-dark); }
+
+        /* === SAĞ SÜTUN (DEFTER VE PANELLER) === */
+        .tabs { display: flex; gap: 0.5rem; border-bottom: 2px solid var(--border); margin-bottom: 1rem; }
+        .tab {
+            padding: 0.75rem 1.5rem; background: transparent; border: none; font-size: 1rem;
+            color: var(--text-light); cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px;
+            transition: all 0.3s ease; font-weight: 500;
+        }
+        .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .tab:hover:not(.active) { color: var(--primary-light); }
+
+        .tab-content { display: none; background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); flex: 1; flex-direction: column; }
+        .tab-content.active { display: flex; }
+
+        .form-group { display: flex; flex-direction: column; gap: 0.5rem; flex: 1; }
+        label { font-weight: bold; color: var(--primary-dark); font-size: 0.9rem; }
+        textarea { flex: 1; resize: none; padding: 1rem; border: 1px solid var(--border); border-radius: 6px; outline: none; font-size: 0.95rem; }
+        textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(0,121,107,0.1); }
+
+        .input-row { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+        .input-row input { flex: 1; padding: 0.7rem; border: 1px solid var(--border); border-radius: 6px; outline: none; }
+        
+        .item-list { list-style: none; overflow-y: auto; flex: 1; }
+        .item-list li {
+            background: var(--bg); padding: 0.75rem 1rem; border-radius: 6px; margin-bottom: 0.5rem;
+            display: flex; justify-content: space-between; align-items: center;
+            border-left: 4px solid var(--primary-light);
+        }
+        .item-list li.intervention { border-left-color: #ff9800; display: flex; align-items: center; justify-content: flex-start; gap: 10px; }
+        .item-list li.intervention span { flex: 1; }
+        .delete-btn { background: none; border: none; color: var(--accent); cursor: pointer; font-weight: bold; font-size: 1.2rem; }
+
+        /* Kaydetme Butonu */
+        .save-section { margin-top: auto; padding-top: 1rem; }
+        .btn-save {
+            width: 100%; background: var(--primary-dark); color: white; border: none;
+            padding: 1rem; border-radius: 8px; font-size: 1.1rem; cursor: pointer; font-weight: bold;
+            transition: background 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .btn-save:hover { background: #00332a; transform: translateY(-1px); }
+
+        /* === KÜTÜPHANE MODAL / SIDEBAR === */
+        .library-panel {
+            position: absolute; top: 0; right: -400px; width: 350px; height: 100%;
+            background: white; box-shadow: -5px 0 15px rgba(0,0,0,0.1); transition: right 0.3s ease;
+            z-index: 20; display: flex; flex-direction: column;
+        }
+        .library-panel.open { right: 0; }
+        .library-header { background: var(--primary); color: white; padding: 1rem; display: flex; justify-content: space-between; align-items: center; }
+        .close-btn { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
+        .saved-cases { padding: 1rem; overflow-y: auto; flex: 1; list-style: none; }
+        .case-card {
+            background: var(--bg); border: 1px solid var(--border); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; cursor: pointer; transition: all 0.2s;
+        }
+        .case-card:hover { border-color: var(--primary); background: #e0f2f1; }
+        .case-title { font-weight: bold; color: var(--primary-dark); margin-bottom: 0.25rem; }
+        .case-date { font-size: 0.8rem; color: var(--text-light); }
+        .case-delete { float: right; color: var(--accent); background: none; border: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>NurseSim: Klinik Karar Verme</h1>
+        <button class="library-btn" onclick="toggleLibrary()">📚 Kütüphanem</button>
+    </header>
+
+    <div class="main-container">
+        <!-- SOL SÜTUN -->
+        <div class="left-col">
+            <div class="simulation-area">
+                <div class="speech-bubble" id="speech-bubble"></div>
+                <svg viewBox="0 0 100 220" class="silhouette" id="silhouette">
+                    <g id="body-wrapper">
+                        <!-- Kafa -->
+                        <circle cx="50" cy="25" r="18" id="part-head" class="body-part" />
+                        <!-- Gövde -->
+                        <path d="M30 45 L70 45 L65 110 L35 110 Z" id="part-chest" class="body-part" />
+                        <path d="M35 110 L65 110 L60 145 L40 145 Z" id="part-stomach" class="body-part" />
+                        <!-- Kalp -->
+                        <circle cx="55" cy="70" r="7" id="part-heart" class="body-part heart-part" />
+                        <!-- Kollar -->
+                        <path d="M30 45 L15 100 L22 100 L35 45 Z" id="part-arms-l" class="body-part" />
+                        <path d="M70 45 L85 100 L78 100 L65 45 Z" id="part-arms-r" class="body-part" />
+                        <!-- Bacaklar -->
+                        <path d="M40 145 L30 210 L42 210 L48 145 Z" id="part-legs-l" class="body-part" />
+                        <path d="M60 145 L70 210 L58 210 L52 145 Z" id="part-legs-r" class="body-part" />
+                    </g>
+                </svg>
+            </div>
+
+            <div class="symptoms-wrapper" id="symptoms-container">
+                <!-- Javascript ile Doldurulacak -->
+            </div>
+
+            <div class="custom-adder">
+                <h4 style="color: var(--primary-dark);">➕ Listede Olmayan Belirti Ekle</h4>
+                <input type="text" id="custom-symptom-name" placeholder="Belirti Adı (Örn: Fotofobi)">
+                <input type="text" id="custom-symptom-quote" placeholder="Hasta Ne Söylüyor? (Örn: Işık gözümü alıyor!)">
+                <button class="btn-add" onclick="addCustomSymptom()">Klinik Tabloya Ekle</button>
+            </div>
+        </div>
+
+        <!-- SAĞ SÜTUN -->
+        <div class="right-col">
+            <div class="tabs">
+                <button class="tab active" data-target="tab-status" onclick="switchTab(this)">Durum ve Tanı</button>
+                <button class="tab" data-target="tab-nanda" onclick="switchTab(this)">NANDA Defteri</button>
+                <button class="tab" data-target="tab-care" onclick="switchTab(this)">Girişim & Bakım</button>
+            </div>
+
+            <!-- Sekme 1 -->
+            <div class="tab-content active" id="tab-status">
+                <div class="form-group">
+                    <label>Klinik Tablo Analizi & Olası Hastalık Tanısı</label>
+                    <textarea id="disease-diagnosis" placeholder="Bu belirtiler kombinasyonu hangi hastalığı veya komplikasyonu işaret ediyor? Patofizyolojik bağlamda buraya not alınız..."></textarea>
+                </div>
+            </div>
+
+            <!-- Sekme 2 -->
+            <div class="tab-content" id="tab-nanda">
+                <label>Hemşirelik Tanıları (NANDA)</label>
+                <div class="input-row">
+                    <input type="text" id="nanda-input" placeholder="Örn: Etkisiz Solunum Örüntüsü">
+                    <button class="btn-add" onclick="addToList('nanda')">Ekle</button>
+                </div>
+                <ul class="item-list" id="nanda-list"></ul>
+            </div>
+
+            <!-- Sekme 3 -->
+            <div class="tab-content" id="tab-care">
+                <label>Hemşirelik Girişimleri (Checklist)</label>
+                <div class="input-row">
+                    <input type="text" id="intervention-input" placeholder="Örn: 2-4 L/dk Nazal Kanül ile O2 başlandı">
+                    <button class="btn-add" onclick="addToList('intervention')">Ekle</button>
+                </div>
+                <ul class="item-list" id="intervention-list"></ul>
+            </div>
+
+            <div class="save-section">
+                <div class="input-row">
+                    <input type="text" id="case-name" placeholder="Vaka Adı (Örn: Acil KOAH Atağı)">
+                </div>
+                <button class="btn-save" onclick="saveCase()">💾 Vakayı Klinik Kütüphaneme Kaydet</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- KÜTÜPHANE PANELİ -->
+    <div class="library-panel" id="library-panel">
+        <div class="library-header">
+            <h3>Kütüphanem</h3>
+            <button class="close-btn" onclick="toggleLibrary()">&times;</button>
+        </div>
+        <ul class="saved-cases" id="saved-cases-list">
+            <!-- JS ile doldurulacak -->
+        </ul>
+    </div>
+
+    <script>
+        // === KLİNİK VERİ TABANI ===
+        const symptomsDB = {
+            "Respiratuar": [
+                { id: "s1", name: "Dispne", part: "part-chest", animClass: "anim-fast-breath", quote: "Nefes alamıyorum!" },
+                { id: "s2", name: "Siyanoz", part: "part-head", animClass: "anim-cyanosis", quote: "Dudaklarım morarıyor..." },
+                { id: "s3", name: "Öksürük", part: "part-chest", animClass: "anim-shake", quote: "Öhö, öhö! Göğsüm yırtılıyor." }
+            ],
+            "Kardiyovasküler": [
+                { id: "s4", name: "Göğüs Ağrısı", part: "part-heart", animClass: "anim-pulse-red", quote: "Göğsümde ezici bir ağrı var!" },
+                { id: "s5", name: "Çarpıntı", part: "part-heart", animClass: "anim-fast-flash", quote: "Kalbim yerinden çıkacak gibi çarpıyor!" },
+                { id: "s6", name: "Solukluk", part: "part-head", animClass: "anim-pale", quote: "Kendimi çok halsiz hissediyorum." },
+                { id: "s7", name: "Periferik Ödem", part: "part-legs-l", animClass: "anim-swell", quote: "Bacaklarım şiş ve gergin." } // Sadece sol bacağı şişirip görsel verebiliriz
+            ],
+            "Nörolojik": [
+                { id: "s8", name: "Konfüzyon", part: "part-head", animClass: "anim-spiral", quote: "Neredeyim ben? Siz kimsiniz?" },
+                { id: "s9", name: "Fasiyal Asimetri", part: "part-head", animClass: "anim-asymmetry", quote: "Yüzümün bir tarafını hissedemiyorum." },
+                { id: "s10", name: "Letarji", part: "part-head", animClass: "anim-pale", quote: "Gözümü açamıyorum, çok uykum var..." }
+            ],
+            "Gastrointestinal & Metabolik": [
+                { id: "s11", name: "Bulantı / Kusma", part: "part-stomach", animClass: "anim-wave-green", quote: "Midem çok bulanıyor..." },
+                { id: "s12", name: "Akut Karın Ağrısı", part: "part-stomach", animClass: "anim-sharp-red", quote: "Karnıma bıçak saplanıyor sanki!" },
+                { id: "s13", name: "Yüksek Ateş", part: "body-wrapper", animClass: "anim-fever", quote: "Yanıyorum, çok sıcak!" }
+            ],
+            "Glukoz Parametreleri": [
+                { id: "s14", name: "Hipoglisemi", part: "body-wrapper", animClass: "anim-shake", quote: "İçim çekiliyor, soğuk terliyorum, ellerim titriyor!" },
+                { id: "s15", name: "Hiperglisemi", part: "part-head", animClass: "anim-dry", quote: "Ağzım kupkuru, çok susadım!" }
+            ],
+            "Ürolojik / Sistemik": [
+                { id: "s16", name: "Anüri / Oligüri", part: "part-stomach", animClass: "anim-swell", quote: "Sabahtan beri hiç idrara çıkamadım." },
+                { id: "s17", name: "Melena", part: "part-stomach", animClass: "anim-sharp-red", quote: "Dışkım simsiyah ve katran gibi." }
+            ]
+        };
+
+        // === GLOBAL STATE ===
+        let currentCase = {
+            id: null,
+            activeSymptoms: [], // ID'leri tutar
+            customSymptoms: [], // Obje olarak tutar
+            diagnosis: "",
+            nanda: [],
+            interventions: []
+        };
+        let bubbleTimeout;
+
+        // === BAŞLANGIÇ YÜKLEMESİ ===
+        function init() {
+            renderSymptoms();
+            loadLibrary();
+        }
+
+        // === ARAYÜZ OLUŞTURMA ===
+        function renderSymptoms() {
+            const container = document.getElementById('symptoms-container');
+            container.innerHTML = '';
+
+            for (const [category, symptoms] of Object.entries(symptomsDB)) {
+                let catDiv = document.createElement('div');
+                catDiv.innerHTML = `<h3 class="category-title">${category}</h3>`;
+                let btnGroup = document.createElement('div');
+                btnGroup.className = 'button-group';
+                
+                symptoms.forEach(symp => {
+                    let btn = document.createElement('button');
+                    btn.className = 'btn-symptom';
+                    btn.id = `btn-${symp.id}`;
+                    btn.innerText = symp.name;
+                    btn.onclick = () => toggleSymptom(symp);
+                    btnGroup.appendChild(btn);
+                });
+                
+                catDiv.appendChild(btnGroup);
+                container.appendChild(catDiv);
+            }
+
+            // Custom symptom alanı için kapsayıcı ekle
+            let customDiv = document.createElement('div');
+            customDiv.id = 'custom-buttons-container';
+            customDiv.className = 'button-group';
+            container.appendChild(customDiv);
+        }
+
+        function renderCustomSymptoms() {
+            const container = document.getElementById('custom-buttons-container');
+            container.innerHTML = '';
+            if(currentCase.customSymptoms.length > 0) {
+                let title = document.createElement('h3');
+                title.className = 'category-title';
+                title.style.marginTop = "10px";
+                title.innerText = "Manuel Eklenenler";
+                container.appendChild(title);
+
+                currentCase.customSymptoms.forEach(symp => {
+                    let btn = document.createElement('button');
+                    btn.className = `btn-symptom ${currentCase.activeSymptoms.includes(symp.id) ? 'active' : ''}`;
+                    btn.id = `btn-${symp.id}`;
+                    btn.innerText = symp.name;
+                    btn.onclick = () => toggleSymptom(symp);
+                    container.appendChild(btn);
+                });
+            }
+        }
+
+        // === SİMÜLASYON LOGİC ===
+        function toggleSymptom(sympObj) {
+            const btn = document.getElementById(`btn-${sympObj.id}`);
+            const index = currentCase.activeSymptoms.indexOf(sympObj.id);
+            const isCustom = sympObj.id.startsWith('custom_');
+            
+            let targetPart;
+            if(sympObj.part === "body-wrapper") {
+                targetPart = document.getElementById("silhouette");
+            } else if (sympObj.part && sympObj.part !== "none") {
+                targetPart = document.getElementById(sympObj.part);
+            }
+
+            if (index > -1) {
+                // Kapat
+                currentCase.activeSymptoms.splice(index, 1);
+                btn.classList.remove('active');
+                if(targetPart && sympObj.animClass) {
+                    targetPart.classList.remove(sympObj.animClass);
+                }
+                hideBubble();
+            } else {
+                // Aç
+                currentCase.activeSymptoms.push(sympObj.id);
+                btn.classList.add('active');
+                if(targetPart && sympObj.animClass) {
+                    targetPart.classList.add(sympObj.animClass);
+                }
+                showBubble(sympObj.quote);
+            }
+        }
+
+        function showBubble(text) {
+            const bubble = document.getElementById('speech-bubble');
+            bubble.innerText = text;
+            bubble.classList.add('show');
+            clearTimeout(bubbleTimeout);
+            bubbleTimeout = setTimeout(() => {
+                bubble.classList.remove('show');
+            }, 4000);
+        }
+
+        function hideBubble() {
+            document.getElementById('speech-bubble').classList.remove('show');
+        }
+
+        function addCustomSymptom() {
+            const nameInput = document.getElementById('custom-symptom-name');
+            const quoteInput = document.getElementById('custom-symptom-quote');
+            
+            if(!nameInput.value.trim()) return alert('Lütfen bir belirti adı girin.');
+
+            const newId = 'custom_' + Date.now();
+            const newSymp = {
+                id: newId,
+                name: nameInput.value.trim(),
+                part: 'none',
+                animClass: '',
+                quote: quoteInput.value.trim() || 'Hissediyorum...'
+            };
+
+            currentCase.customSymptoms.push(newSymp);
+            nameInput.value = '';
+            quoteInput.value = '';
+            
+            renderCustomSymptoms();
+            toggleSymptom(newSymp); // Ekler eklemez aktif et
+        }
+
+        // === DEFTER VE TAB LOGİC ===
+        function switchTab(btn) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            btn.classList.add('active');
+            document.getElementById(btn.getAttribute('data-target')).classList.add('active');
+        }
+
+        function addToList(type) {
+            const input = document.getElementById(`${type}-input`);
+            const val = input.value.trim();
+            if(!val) return;
+
+            if(type === 'nanda') currentCase.nanda.push(val);
+            if(type === 'intervention') currentCase.interventions.push({ text: val, done: false });
+            
+            input.value = '';
+            renderLists();
+        }
+
+        function removeFromList(type, index) {
+            if(type === 'nanda') currentCase.nanda.splice(index, 1);
+            if(type === 'intervention') currentCase.interventions.splice(index, 1);
+            renderLists();
+        }
+
+        function toggleCheckbox(index) {
+            currentCase.interventions[index].done = !currentCase.interventions[index].done;
+        }
+
+        function renderLists() {
+            // NANDA
+            const nandaUl = document.getElementById('nanda-list');
+            nandaUl.innerHTML = '';
+            currentCase.nanda.forEach((item, idx) => {
+                nandaUl.innerHTML += `<li>${item} <button class="delete-btn" onclick="removeFromList('nanda', ${idx})">&times;</button></li>`;
+            });
+
+            // Interventions
+            const careUl = document.getElementById('intervention-list');
+            careUl.innerHTML = '';
+            currentCase.interventions.forEach((item, idx) => {
+                const checked = item.done ? 'checked' : '';
+                careUl.innerHTML += `
+                    <li class="intervention">
+                        <input type="checkbox" ${checked} onclick="toggleCheckbox(${idx})">
+                        <span style="${item.done ? 'text-decoration: line-through; color: gray;' : ''}">${item.text}</span>
+                        <button class="delete-btn" onclick="removeFromList('intervention', ${idx})">&times;</button>
+                    </li>`;
+            });
+        }
+
+        // === LOCALSTORAGE KÜTÜPHANE İŞLEMLERİ ===
+        function toggleLibrary() {
+            document.getElementById('library-panel').classList.toggle('open');
+            loadLibrary();
+        }
+
+        function saveCase() {
+            const caseNameInput = document.getElementById('case-name').value.trim();
+            if(!caseNameInput) return alert("Lütfen kaydetmeden önce bir Vaka Adı girin.");
+
+            currentCase.diagnosis = document.getElementById('disease-diagnosis').value;
+            currentCase.id = currentCase.id || 'case_' + Date.now();
+            currentCase.date = new Date().toLocaleString('tr-TR');
+            currentCase.name = caseNameInput;
+
+            let cases = JSON.parse(localStorage.getItem('nurseSim_cases') || '[]');
+            
+            // Var olanı güncelle veya yeni ekle
+            const existIndex = cases.findIndex(c => c.id === currentCase.id);
+            if(existIndex > -1) {
+                cases[existIndex] = currentCase;
+            } else {
+                cases.push(currentCase);
+            }
+
+            localStorage.setItem('nurseSim_cases', JSON.stringify(cases));
+            alert("✅ Vaka kütüphaneye kaydedildi!");
+            loadLibrary();
+        }
+
+        function loadLibrary() {
+            const cases = JSON.parse(localStorage.getItem('nurseSim_cases') || '[]');
+            const list = document.getElementById('saved-cases-list');
+            list.innerHTML = '';
+
+            if(cases.length === 0) {
+                list.innerHTML = '<li style="padding:1rem; color:#757575;">Henüz kaydedilmiş vaka yok.</li>';
+                return;
+            }
+
+            cases.forEach((c, idx) => {
+                let li = document.createElement('li');
+                li.className = 'case-card';
+                li.innerHTML = `
+                    <button class="case-delete" onclick="deleteCase(event, '${c.id}')">&times;</button>
+                    <div class="case-title">${c.name}</div>
+                    <div class="case-date">${c.date}</div>
+                `;
+                li.onclick = () => restoreCase(c);
+                list.appendChild(li);
+            });
+        }
+
+        function deleteCase(event, caseId) {
+            event.stopPropagation(); // Tıklamanın karta geçmesini engelle
+            if(confirm('Bu vakayı kütüphaneden silmek istediğinize emin misiniz?')) {
+                let cases = JSON.parse(localStorage.getItem('nurseSim_cases') || '[]');
+                cases = cases.filter(c => c.id !== caseId);
+                localStorage.setItem('nurseSim_cases', JSON.stringify(cases));
+                loadLibrary();
+            }
+        }
+
+        function restoreCase(caseData) {
+            // Animasyonları temizle
+            document.querySelectorAll('.body-part, .silhouette').forEach(el => {
+                el.className.baseVal ? el.className.baseVal = el.className.baseVal.replace(/anim-[a-z-]+/g, '') : el.className = el.className.replace(/anim-[a-z-]+/g, '');
+            });
+            document.querySelectorAll('.btn-symptom').forEach(btn => btn.classList.remove('active'));
+            hideBubble();
+
+            // Veriyi yükle (Deep copy)
+            currentCase = JSON.parse(JSON.stringify(caseData));
+
+            // UI'ı güncelle
+            document.getElementById('case-name').value = currentCase.name;
+            document.getElementById('disease-diagnosis').value = currentCase.diagnosis;
+            renderCustomSymptoms();
+            renderLists();
+
+            // Aktif Semptomları ve Animasyonları Tetikle
+            currentCase.activeSymptoms.forEach(sympId => {
+                let sympObj = null;
+                
+                // Standart DB'de ara
+                for (const cat in symptomsDB) {
+                    const found = symptomsDB[cat].find(s => s.id === sympId);
+                    if(found) sympObj = found;
+                }
+                // Custom'larda ara
+                if(!sympObj) {
+                    sympObj = currentCase.customSymptoms.find(s => s.id === sympId);
+                }
+
+                if(sympObj) {
+                    const btn = document.getElementById(`btn-${sympObj.id}`);
+                    if(btn) btn.classList.add('active');
+                    
+                    let targetPart;
+                    if(sympObj.part === "body-wrapper") targetPart = document.getElementById("silhouette");
+                    else if (sympObj.part && sympObj.part !== "none") targetPart = document.getElementById(sympObj.part);
+
+                    if(targetPart && sympObj.animClass) {
+                        targetPart.classList.add(sympObj.animClass);
+                    }
+                }
+            });
+
+            toggleLibrary(); // Modalı kapat
+        }
+
+        // Başlat
+        window.onload = init;
+    </script>
+</body>
+</html>
